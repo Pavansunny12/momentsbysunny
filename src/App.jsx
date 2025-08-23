@@ -35,6 +35,8 @@ const FORMSPREE_ENDPOINT = "https://formspree.io/f/mwpqjnnw";
    — Mobile-first tweaks
    — Safer tap targets & spacing
    — Cloudinary responsive images (f_auto, q_auto, dpr_auto)
+   — PERFORMANCE PASS (Aug 23): responsive srcSet, fewer eager loads,
+     smaller background, corrected preload attributes
 ============================================================= */
 
 // ---------------------------------------------
@@ -91,8 +93,13 @@ const cldSrcSet = (u, widths) =>
   widths.map((w) => `${cldW(u, w)} ${w}w`).join(", ");
 const cldPlaceholder = (u) =>
   u.includes("/upload/")
-    ? u.replace("/upload/", "/upload/f_auto,q_10,e_blur:2000,w_32/")
+    ? u.replace("/upload/", "/upload/f_auto,q_40,w_240/") // crisp mini preview, no blur
     : u;
+
+// Width sets for srcSet
+const HERO_WIDTHS = [1280, 1600, 2000, 2400];
+const CARD_WIDTHS = [480, 640, 800, 1000];
+const PORTRAIT_WIDTHS = [480, 640, 800, 1200];
 
 // ---------------------------------------------
 // Contact & Copy
@@ -186,8 +193,8 @@ const AdaptiveRouter = ({ children }) => {
   );
 };
 
-const Container = ({ className = "", children }) => (
-  <div className={`mx-auto max-w-7xl px-4 sm:px-6 lg:px-8 ${className}`}>
+const Container = ({ className = "", children, ...props }) => (
+  <div className={`mx-auto max-w-7xl px-4 sm:px-6 lg:px-8 ${className}`} {...props}>
     {children}
   </div>
 );
@@ -484,7 +491,9 @@ const Hero = () => {
     <section className="relative">
       <div className="relative h-[78vh] sm:h-[88vh] md:h-[90vh]">
         <img
-          src={cld(IMAGES.heroMain)}
+          src={cldW(IMAGES.heroMain, 1600)}
+          srcSet={cldSrcSet(IMAGES.heroMain, HERO_WIDTHS)}
+          sizes="100vw"
           alt="Warm, candid portrait from Moments by Sunny"
           className="absolute inset-0 h-full w-full object-cover object-[50%_20%] md:object-[50%_30%] select-none"
           loading="eager"
@@ -493,7 +502,6 @@ const Hero = () => {
           onContextMenu={(e) => e.preventDefault()}
           draggable={false}
           style={{ WebkitTouchCallout: "none", WebkitUserSelect: "none", userSelect: "none" }}
-          sizes="(max-width: 640px) 100vw, (max-width: 1024px) 100vw, 100vw"
         />
         <div className="absolute inset-0 bg-black/30" />
         <Container>
@@ -555,7 +563,8 @@ const FeaturedGallery = () => (
             <div className="relative overflow-hidden rounded-3xl shadow-sm">
               <div className="before:block before:pb-[66%]" />
               <img
-                src={cld(it.src)}
+                src={cldW(it.src, 800)}
+                srcSet={cldSrcSet(it.src, CARD_WIDTHS)}
                 sizes="(max-width: 640px) 100vw, (max-width: 1024px) 50vw, 33vw"
                 alt={it.title}
                 loading="lazy"
@@ -668,20 +677,22 @@ const buildImages = () => {
 };
 
 const MasonryItem = ({ img, idx }) => {
-  const widths = [320, 480, 640, 800, 1024, 1280];
-  const eager = idx < 12;
+  const widths = [320, 480, 640, 800]; // cap to smaller candidates for faster picks
+  const eager = idx < 2; // fewer eager images
   const [loaded, setLoaded] = useState(false);
-  const [srcUrl, setSrcUrl] = useState(cldW(img.src, 640));
+  const [srcUrl, setSrcUrl] = useState(
+    cldW(img.src, 640).replace("q_auto,", "q_auto:eco,")
+  );
 
   // If the transformed URL fails or is too slow, fall back to the original
   useEffect(() => {
-    setSrcUrl(cldW(img.src, 640));
+    setSrcUrl(cldW(img.src, 640).replace("q_auto,", "q_auto:eco,"));
     setLoaded(false);
 
     const slowFallback = setTimeout(() => {
-      // If still not loaded after 4s, switch to the original asset
+      // If still not loaded after 2s, switch to the original asset
       if (!loaded) setSrcUrl(img.src);
-    }, 4000);
+    }, 2000);
     return () => clearTimeout(slowFallback);
   }, [img.src]);
 
@@ -703,8 +714,7 @@ const MasonryItem = ({ img, idx }) => {
           alt={img.label}
           loading={eager ? "eager" : "lazy"}
           decoding="async"
-          fetchPriority={eager ? "high" : "auto"}
-          referrerPolicy="no-referrer"
+          fetchPriority={eager && idx === 0 ? "high" : "auto"}
           onLoad={() => setLoaded(true)}
           onError={() => {
             // Hard fallback to the original image
@@ -713,7 +723,7 @@ const MasonryItem = ({ img, idx }) => {
           }}
           className={`w-full h-auto block select-none ${
             loaded ? "opacity-100" : "opacity-0"
-          } transition-opacity duration-500 motion-safe:will-change-transform motion-safe:transition-transform motion-safe:duration-500 motion-safe:ease-[cubic-bezier(.22,1,.36,1)] group-hover:scale-[1.03]`}
+          } transition-opacity duration-300 motion-safe:will-change-transform motion-safe:transition-transform motion-safe:duration-300 motion-safe:ease-[cubic-bezier(.22,1,.36,1)] group-hover:scale-[1.03]`}
           style={{ transformOrigin: "50% 50%", backfaceVisibility: "hidden" }}
           onContextMenu={(e) => e.preventDefault()}
           draggable={false}
@@ -738,14 +748,15 @@ const PortfolioPage = () => {
 
   useEffect(() => {
     const head = document.head;
-    const preloadCount = Math.min(12, images.length);
+    const preloadCount = Math.min(4, images.length); // reduced from 12
     for (let i = 0; i < preloadCount; i++) {
       const link = document.createElement("link");
       link.rel = "preload";
       link.as = "image";
       link.href = cldW(images[i].src, 800);
-      link.imageSrcSet = cldSrcSet(images[i].src, [480, 640, 800]);
-      link.sizes = "(max-width: 1024px) 50vw, 25vw";
+      // Correct attribute names for responsive preloads
+      link.setAttribute("imagesrcset", cldSrcSet(images[i].src, [480, 640, 800]));
+      link.setAttribute("imagesizes", "(max-width: 1024px) 50vw, 25vw");
       head.appendChild(link);
     }
     return () => {
@@ -764,7 +775,7 @@ const PortfolioPage = () => {
           setVisibleCount((c) => Math.min(c + 8, images.length));
         }
       },
-      { rootMargin: "1200px 0px" }
+      { rootMargin: "600px 0px" }
     );
     io.observe(sentinelRef.current);
     return () => {
@@ -870,7 +881,8 @@ const AboutPage = () => {
           </div>
           <div className="flex justify-center md:justify-end">
             <img
-              src={cld(IMAGES.aboutMe)}
+              src={cldW(IMAGES.aboutMe, 800)}
+              srcSet={cldSrcSet(IMAGES.aboutMe, PORTRAIT_WIDTHS)}
               sizes="(max-width: 768px) 100vw, 50vw"
               alt="Sunny, the photographer behind Moments by Sunny"
               loading="lazy"
@@ -1038,6 +1050,15 @@ function _devTests() {
     const tNoon = new Date(2025, 0, 1, 12, 0);
     const a2 = formatUSDateTime(tNoon);
     console.assert(a2.dateUS === "01-01-2025" && a2.time12 === "12:00 PM", "Noon formatting failed", a2);
+
+    // New tests
+    const tMorning = new Date(2025, 6, 4, 11, 5);
+    const a3 = formatUSDateTime(tMorning);
+    console.assert(a3.dateUS === "07-04-2025" && a3.time12 === "11:05 AM", "11:05 AM formatting failed", a3);
+
+    const tLate = new Date(2025, 6, 4, 23, 59);
+    const a4 = formatUSDateTime(tLate);
+    console.assert(a4.dateUS === "07-04-2025" && a4.time12 === "11:59 PM", "11:59 PM formatting failed", a4);
   } catch {}
 }
 
@@ -1169,7 +1190,7 @@ const ContactPage = () => {
     <main
       className="relative"
       style={{
-        backgroundImage: `url(${cld(IMAGES.bookBg)})`,
+        backgroundImage: `url(${cldW(IMAGES.bookBg, 1600).replace("q_auto,", "q_auto:eco,")})`,
         backgroundSize: "cover",
         backgroundPosition: "50% 0%",
         backgroundRepeat: "no-repeat",
