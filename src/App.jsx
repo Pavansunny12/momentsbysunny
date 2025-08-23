@@ -1,4 +1,5 @@
 import React, { useEffect, useMemo, useRef, useState } from "react";
+import { createPortal } from "react-dom";
 import {
   HashRouter,
   MemoryRouter,
@@ -31,9 +32,9 @@ const FORMSPREE_ENDPOINT = "https://formspree.io/f/mwpqjnnw";
 
 /* =============================================================
    Moments by Sunny — Single-file React site (JSX)
-   - Tailwind ready
-   - No TypeScript tokens
-   - Links styled so no blue/underline leaks
+   — Mobile-first tweaks
+   — Safer tap targets & spacing
+   — Cloudinary responsive images (f_auto, q_auto, dpr_auto)
 ============================================================= */
 
 // ---------------------------------------------
@@ -54,14 +55,22 @@ const BRAND = {
   name: "Moments by Sunny",
   tagline: "Capturing emotions in every frame",
 };
+
+// Site images used across sections
 const IMAGES = {
+  // hero image used on home (top aligned so faces are visible)
   heroMain:
     "https://res.cloudinary.com/dz9agtvev/image/upload/v1755440876/main-min_e83hkb.jpg",
+  // about page portrait
   aboutMe:
     "https://res.cloudinary.com/dz9agtvev/image/upload/v1755440869/aboutme-min_h3pglb.jpg",
+  // contact page background behind the form
   bookBg:
-    "https://res.cloudinary.com/dz9agtvev/image/upload/v1755661761/5f3792bb-fc4e-4df0-b90d-138ebdc5ecf5_lbc6uj.png",
+    "https://res.cloudinary.com/dz9agtvev/image/upload/v1755977327/98bc3f56-1556-49f0-8cbb-b1caf9dcd077_jtbb86.png",
 };
+
+// Favicon (separate from navbar logo so we can swap independently)
+const FAVICON = "https://res.cloudinary.com/dz9agtvev/image/upload/v1755974985/8b5e04ec-5655-42a9-97ed-d2cc71e74ab3_atmweo.png";
 
 // Cloudinary helpers
 const cld = (u) =>
@@ -125,8 +134,8 @@ const FEATURED_ITEMS = [
 // ---------------------------------------------
 // Layout & animation tokens
 // ---------------------------------------------
-const HERO_PAD = "pl-6 md:pl-12 lg:pl-24 pt-4 md:pt-8 pb-8";
-const FEATURED_TOP_PAD = "pt-16 md:pt-20 lg:pt-24";
+const HERO_PAD = "pl-4 sm:pl-8 lg:pl-24 pt-4 md:pt-8 pb-8"; // tighter on phones
+const FEATURED_TOP_PAD = "pt-12 md:pt-20 lg:pt-24"; // less top gap on phones
 const HERO_EASE = [0.22, 1, 0.36, 1];
 const heroContainer = {
   hidden: {},
@@ -139,16 +148,6 @@ const heroItem = {
     y: 0,
     filter: "blur(0px)",
     transition: { duration: 0.8, ease: HERO_EASE },
-  },
-};
-const cardReveal = {
-  hidden: { opacity: 0, y: 24, scale: 0.98, filter: "blur(6px)" },
-  show: {
-    opacity: 1,
-    y: 0,
-    scale: 1,
-    filter: "blur(0px)",
-    transition: { duration: 0.6, ease: HERO_EASE },
   },
 };
 
@@ -194,14 +193,16 @@ const Container = ({ className = "", children }) => (
 );
 
 const SectionTitle = ({ title, subtitle, center }) => (
-  <div className={`mb-10 ${center ? "text-center" : ""}`}>
-    <h2 className="text-3xl sm:text-4xl font-serif tracking-tight text-[#3A342E]">
+  <div className={`mb-8 sm:mb-10 ${center ? "text-center" : ""}`}>
+    <h2 className="text-[26px] sm:text-4xl font-serif tracking-tight text-[#3A342E] leading-tight">
       {title}
     </h2>
     {subtitle && (
-      <p className="mt-3 text-[#5A544E] max-w-2xl mx-auto">{subtitle}</p>
+      <p className="mt-2 sm:mt-3 text-[#5A544E] max-w-2xl mx-auto text-[15px] sm:text-base">
+        {subtitle}
+      </p>
     )}
-    <div className="mt-6 h-[2px] w-24 bg-[#C7A869] mx-auto" />
+    <div className="mt-5 h-[2px] w-20 sm:w-24 bg-[#C7A869] mx-auto" />
   </div>
 );
 
@@ -223,7 +224,8 @@ const Button = ({
   const base = BTN_BASE[variant] ?? BTN_BASE.solid;
   const el = (
     <span
-      className={`inline-flex items-center gap-2 px-5 py-2.5 rounded-2xl text-sm font-medium shadow-sm transition-all ${base} ${className}`}
+      className={`inline-flex items-center justify-center gap-2 px-5 py-3 rounded-2xl text-[15px] sm:text-sm font-medium shadow-sm transition-all ${base} ${className}`}
+      style={{ minHeight: 44 }}
     >
       {children}
     </span>
@@ -245,7 +247,7 @@ const Button = ({
 };
 
 const Tag = ({ children }) => (
-  <span className="inline-flex items-center gap-2 rounded-full border border-[#C7A869]/30 bg-[#FAF7F2] px-3 py-1 text-xs text-[#3A342E]">
+  <span className="inline-flex items-center gap-2 rounded-full border border-[#C7A869]/30 bg-[#FAF7F2] px-3 py-1.5 text-xs sm:text-[13px] text-[#3A342E]">
     <Star className="h-3.5 w-3.5" /> {children}
   </span>
 );
@@ -259,7 +261,7 @@ const FAQItem = ({ q, a }) => {
         onClick={() => setOpen((v) => !v)}
         aria-expanded={open}
       >
-        <span className="font-medium">{q}</span>
+        <span className="font-medium text-[15px] sm:text-base">{q}</span>
         <ChevronDown
           className={`h-5 w-5 transition-transform ${open ? "rotate-180" : ""}`}
         />
@@ -269,7 +271,7 @@ const FAQItem = ({ q, a }) => {
         animate={{ height: open ? "auto" : 0, opacity: open ? 1 : 0 }}
         className="overflow-hidden"
       >
-        <div className="px-4 pb-4 text-[#5A544E]">{a}</div>
+        <div className="px-4 pb-4 text-[#5A544E] text-[15px] sm:text-base">{a}</div>
       </motion.div>
     </div>
   );
@@ -281,38 +283,70 @@ const FAQItem = ({ q, a }) => {
 const Navbar = () => {
   const [open, setOpen] = useState(false);
   const { pathname } = useLocation();
+  const [forceMobile, setForceMobile] = useState(false);
+
   useEffect(() => {
     setOpen(false);
   }, [pathname]);
+
   useEffect(() => {
     if (!open) return;
     const { overflow } = document.body.style;
     document.body.style.overflow = "hidden";
+    document.body.style.touchAction = "none";
     return () => {
       document.body.style.overflow = overflow;
+      document.body.style.touchAction = "auto";
     };
   }, [open]);
+
   useEffect(() => {
-    const onKey = (e) => {
-      if (e.key === "Escape") setOpen(false);
-    };
+    const onKey = (e) => e.key === "Escape" && setOpen(false);
     window.addEventListener("keydown", onKey);
     return () => window.removeEventListener("keydown", onKey);
   }, []);
 
+  // Detect touch devices (phones / iPad) so we show a full-screen sheet there
+  useEffect(() => {
+    const calc = () => {
+      let touch = false;
+      try {
+        touch =
+          "ontouchstart" in window ||
+          (navigator && navigator.maxTouchPoints > 0) ||
+          window.matchMedia("(hover: none)").matches ||
+          window.matchMedia("(pointer: coarse)").matches;
+      } catch {}
+      setForceMobile(touch);
+    };
+    calc();
+    window.addEventListener("resize", calc);
+    return () => window.removeEventListener("resize", calc);
+  }, []);
+
+  const desktopNavClass = forceMobile ? "hidden" : "hidden xl:flex";
+  const mobileToggleClass = forceMobile ? "flex" : "xl:hidden";
+
+  const SheetPortal = ({ children }) =>
+    createPortal(
+      <div className="fixed inset-0 z-[9999]">{children}</div>,
+      document.body
+    );
+
   return (
     <header className="sticky top-0 z-50 backdrop-blur supports-[backdrop-filter]:bg-white/60 border-b border-[#E9E2DA] bg-white">
       <Container className="flex items-center justify-between h-16">
-        <Link
-          to="/"
-          className="flex items-center gap-3 no-underline text-inherit"
-        >
-          <Camera className="h-6 w-6 text-[#C7A869]" />
-          <span className="font-serif text-xl text-[#3A342E]">
-            Moments by Sunny
-          </span>
+        <Link to="/" className="flex items-center gap-3 no-underline text-inherit">
+          <img
+            src={cldW(FAVICON, 96)}
+            alt="Moments by Sunny logo"
+            className="h-8 w-8 md:h-9 md:w-9 rounded-lg object-contain shrink-0"
+            loading="eager"
+            decoding="async"
+          />
+          <span className="font-serif text-xl text-[#3A342E]">Moments by Sunny</span>
         </Link>
-        <nav className="hidden md:flex items-center gap-8 text-[#3A342E]">
+        <nav className={`${desktopNavClass} items-center gap-8 text-[#3A342E]`}>
           {[
             ["Portfolio", "/portfolio"],
             ["About", "/about"],
@@ -322,9 +356,7 @@ const Navbar = () => {
               key={href}
               to={href}
               className={({ isActive }) =>
-                `no-underline text-sm hover:text-[#C7A869] transition ${
-                  isActive ? "text-[#C7A869]" : ""
-                }`
+                `no-underline text-sm hover:text-[#C7A869] transition ${isActive ? "text-[#C7A869]" : ""}`
               }
             >
               {label}
@@ -335,7 +367,7 @@ const Navbar = () => {
           </Button>
         </nav>
         <button
-          className="md:hidden p-2 rounded-lg focus:outline-none focus:ring-2 focus:ring-[#C7A869]/50"
+          className={`${mobileToggleClass} p-2 rounded-lg focus:outline-none focus:ring-2 focus:ring-[#C7A869]/50`}
           onClick={() => setOpen(!open)}
           aria-label="Toggle Menu"
           aria-expanded={open}
@@ -345,32 +377,62 @@ const Navbar = () => {
         </button>
       </Container>
 
-      {/* Backdrop */}
-      <AnimatePresence>
-        {open && (
-          <motion.button
+      {/* Full-screen sheet on touch devices, via portal to body */}
+      {open && forceMobile && (
+        <SheetPortal>
+          <div className="absolute inset-0 bg-white" />
+          <div className="absolute inset-0 flex flex-col">
+            <div className="flex items-center justify-between h-16 px-4 border-b border-[#E9E2DA] bg-white">
+              <span className="font-serif text-lg text-[#3A342E]">Menu</span>
+              <button
+                onClick={() => setOpen(false)}
+                aria-label="Close"
+                className="p-2 rounded-lg focus:outline-none focus:ring-2 focus:ring-[#C7A869]/50"
+              >
+                <X className="h-6 w-6" />
+              </button>
+            </div>
+            <nav className="p-6 overflow-y-auto">
+              <div role="menu" className="divide-y divide-[#E9E2DA]/60 -mx-1">
+                {[
+                  ["Portfolio", "/portfolio"],
+                  ["About", "/about"],
+                  ["Services", "/services"],
+                  ["Contact", "/contact"],
+                ].map(([label, href]) => (
+                  <Link
+                    key={href}
+                    to={href}
+                    onClick={() => setOpen(false)}
+                    className="block px-1 py-4 text-lg text-[#3A342E] no-underline transition-colors hover:text-[#C7A869] focus:outline-none focus:text-[#C7A869] active:opacity-80"
+                  >
+                    {label}
+                  </Link>
+                ))}
+              </div>
+              <div className="pt-6">
+                <Button to="/contact" variant="solid" className="w-full">
+                  Book Now
+                </Button>
+              </div>
+            </nav>
+          </div>
+        </SheetPortal>
+      )}
+
+      {/* Right drawer for non-touch small screens */}
+      {open && !forceMobile && (
+        <SheetPortal>
+          <button
             aria-hidden
             onClick={() => setOpen(false)}
-            className="md:hidden fixed inset-0 bg-black/20"
-            initial={{ opacity: 0 }}
-            animate={{ opacity: 1 }}
-            exit={{ opacity: 0 }}
+            className="absolute inset-0 bg-black/20"
           />
-        )}
-      </AnimatePresence>
-
-      {/* Drawer */}
-      <AnimatePresence>
-        {open && (
-          <motion.aside
+          <aside
             id="mobile-menu"
             role="dialog"
             aria-modal="true"
-            initial={{ x: 320, opacity: 1 }}
-            animate={{ x: 0, opacity: 1 }}
-            exit={{ x: 320, opacity: 1 }}
-            transition={{ type: "spring", stiffness: 300, damping: 30 }}
-            className="md:hidden fixed inset-y-0 right-0 z-[60] w-[85vw] max-w-sm border-l border-[#E9E2DA] bg-white/95 backdrop-blur shadow-xl"
+            className="absolute inset-y-0 right-0 w-[85vw] max-w-sm border-l border-[#E9E2DA] bg-white shadow-xl"
           >
             <div className="flex items-center justify-between h-16 px-4 border-b border-[#E9E2DA]">
               <span className="font-serif text-lg text-[#3A342E]">Menu</span>
@@ -383,7 +445,7 @@ const Navbar = () => {
               </button>
             </div>
             <nav className="p-6">
-              <div className="grid gap-4">
+              <div role="menu" className="divide-y divide-[#E9E2DA]/60 -mx-1">
                 {[
                   ["Portfolio", "/portfolio"],
                   ["About", "/about"],
@@ -394,19 +456,21 @@ const Navbar = () => {
                     key={href}
                     to={href}
                     onClick={() => setOpen(false)}
-                    className="py-2 text-lg text-[#3A342E] hover:text-[#C7A869] no-underline"
+                    className="block px-1 py-4 text-lg text-[#3A342E] no-underline transition-colors hover:text-[#C7A869] focus:outline-none focus:text-[#C7A869] active:opacity-80"
                   >
                     {label}
                   </Link>
                 ))}
+              </div>
+              <div className="pt-6">
                 <Button to="/contact" variant="solid" className="w-full">
                   Book Now
                 </Button>
               </div>
             </nav>
-          </motion.aside>
-        )}
-      </AnimatePresence>
+          </aside>
+        </SheetPortal>
+      )}
     </header>
   );
 };
@@ -422,12 +486,13 @@ const Hero = () => {
         <img
           src={cld(IMAGES.heroMain)}
           alt="Warm, candid portrait from Moments by Sunny"
-          className="absolute inset-0 h-full w-full object-cover object-[50%_20%] md:object-[50%_30%]"
+          className="absolute inset-0 h-full w-full object-cover object-[50%_20%] md:object-[50%_30%] select-none"
           loading="eager"
           decoding="async"
           fetchPriority="high"
           onContextMenu={(e) => e.preventDefault()}
           draggable={false}
+          style={{ WebkitTouchCallout: "none", WebkitUserSelect: "none", userSelect: "none" }}
           sizes="(max-width: 640px) 100vw, (max-width: 1024px) 100vw, 100vw"
         />
         <div className="absolute inset-0 bg-black/30" />
@@ -475,9 +540,9 @@ const Hero = () => {
 // Featured
 // ---------------------------------------------
 const FeaturedGallery = () => (
-  <Container className={`${FEATURED_TOP_PAD} pb-16`} style={{ contentVisibility: "auto" }}>
+  <Container className={`${FEATURED_TOP_PAD} pb-14 sm:pb-16`} style={{ contentVisibility: "auto" }}>
     <SectionTitle title="Featured Work" subtitle={COPY.featuredSubtitle} center />
-    <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
+    <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 sm:gap-6">
       {FEATURED_ITEMS.map((it, idx) => (
         <motion.div
           key={it.id}
@@ -498,6 +563,7 @@ const FeaturedGallery = () => (
                 className="absolute inset-0 h-full w-full object-cover select-none"
                 onContextMenu={(e) => e.preventDefault()}
                 draggable={false}
+                style={{ WebkitTouchCallout: "none", WebkitUserSelect: "none", userSelect: "none" }}
               />
             </div>
             <div className="sr-only">{it.title}</div>
@@ -607,14 +673,14 @@ const MasonryItem = ({ img, idx }) => {
   const [loaded, setLoaded] = useState(false);
 
   return (
-    <div className="mb-6 break-inside-avoid">
+    <div className="mb-4 sm:mb-6 break-inside-avoid">
       <div
         tabIndex={0}
         className="group relative block w-full focus:outline-none rounded-xl overflow-hidden shadow-sm transition-shadow duration-300 hover:shadow-md"
         style={{
           backgroundImage: `url(${cldPlaceholder(img.src)})`,
           backgroundSize: "cover",
-          backgroundPosition: "center",
+          backgroundPosition: "50% 0%",
         }}
       >
         <img
@@ -626,6 +692,14 @@ const MasonryItem = ({ img, idx }) => {
           decoding="async"
           fetchPriority={eager ? "high" : "auto"}
           onLoad={() => setLoaded(true)}
+          onError={(e) => {
+            try {
+              e.currentTarget.src = img.src; // fallback to original URL
+              e.currentTarget.removeAttribute("srcset");
+              e.currentTarget.sizes = "100vw";
+            } catch {}
+            setLoaded(true);
+          }}
           className={`w-full h-auto block select-none ${
             loaded ? "opacity-100" : "opacity-0"
           } transition-opacity duration-500 motion-safe:will-change-transform motion-safe:transition-transform motion-safe:duration-500 motion-safe:ease-[cubic-bezier(.22,1,.36,1)] group-hover:scale-[1.03]`}
@@ -639,7 +713,7 @@ const MasonryItem = ({ img, idx }) => {
 };
 
 const MasonryColumns = ({ images }) => (
-  <div className="columns-1 sm:columns-2 lg:columns-3 xl:columns-4 gap-6 [column-fill:_balance]">
+  <div className="columns-1 sm:columns-2 lg:columns-3 xl:columns-4 gap-4 sm:gap-6 [column-fill:_balance]">
     {images.map((img, idx) => (
       <MasonryItem key={img.id} img={img} idx={idx} />
     ))}
@@ -689,7 +763,7 @@ const PortfolioPage = () => {
 
   return (
     <main className="bg-white" style={{ contentVisibility: "auto" }}>
-      <Container className="py-10" style={{ contentVisibility: "auto" }}>
+      <Container className="py-8 sm:py-10" style={{ contentVisibility: "auto" }}>
         <SectionTitle
           title="Portfolio"
           subtitle={COPY.portfolioSubtitle}
@@ -746,30 +820,28 @@ const AboutPage = () => {
   return (
     <main className="bg-white" style={{ contentVisibility: "auto" }}>
       <section className="bg-gradient-to-b from-[#FAF7F2] to-white border-b border-[#E9E2DA]">
-        <Container className="py-14 text-center">
-          <h1 className="font-serif text-4xl sm:text-5xl text-[#3A342E]">
+        <Container className="py-12 sm:py-14 text-center">
+          <h1 className="font-serif text-3xl sm:text-5xl text-[#3A342E] leading-tight">
             About Sunny
           </h1>
-          <p className="mt-3 text-[#5A544E] max-w-2xl mx-auto">
+          <p className="mt-3 text-[#5A544E] max-w-2xl mx-auto text-[15px] sm:text-base">
             A calm presence behind the camera—capturing laughter between lines,
             quiet hands held tight, and wind-tousled hair at golden hour.
           </p>
-          <div className="mt-6 h-[2px] w-24 bg-[#C7A869] mx-auto" />
+          <div className="mt-5 h-[2px] w-20 sm:w-24 bg-[#C7A869] mx-auto" />
         </Container>
       </section>
       <section>
-        <Container className="py-12 grid md:grid-cols-2 gap-10 items-center">
+        <Container className="py-10 sm:py-12 grid md:grid-cols-2 gap-8 sm:gap-10 items-center">
           <div>
-            <h2 className="font-serif text-2xl text-[#3A342E]">
-              A gentle, story-first approach
-            </h2>
-            <p className="mt-3 text-[#3A342E] leading-relaxed">
+            <h2 className="font-serif text-2xl text-[#3A342E]">A gentle, story-first approach</h2>
+            <p className="mt-3 text-[#3A342E] leading-relaxed text-[15px] sm:text-base">
               I’m Sunny—a lifestyle photographer drawn to the soft, imperfect
               little moments that make a day feel like yours. I’ll guide just
               enough to keep you comfortable, then step back so real connection
               can unfold.
             </p>
-            <p className="mt-4 text-[#3A342E] leading-relaxed">
+            <p className="mt-4 text-[#3A342E] leading-relaxed text-[15px] sm:text-base">
               The heart of <em>Moments by Sunny</em> is simple: your photos
               should feel like home—warm, candid, and timeless.
             </p>
@@ -795,34 +867,35 @@ const AboutPage = () => {
               className="w-full max-w-md md:max-w-xl rounded-3xl object-cover shadow-sm select-none"
               onContextMenu={(e) => e.preventDefault()}
               draggable={false}
+              style={{ WebkitTouchCallout: "none", WebkitUserSelect: "none", userSelect: "none" }}
             />
           </div>
         </Container>
       </section>
       <section>
-        <Container className="py-10" style={{ contentVisibility: "auto" }}>
-          <h3 className="font-serif text-2xl text-[#3A342E] mb-6">
+        <Container className="py-8 sm:py-10" style={{ contentVisibility: "auto" }}>
+          <h3 className="font-serif text-2xl text-[#3A342E] mb-5 sm:mb-6 text-center">
             My Approach
           </h3>
-          <div className="grid md:grid-cols-3 gap-6">
+          <div className="grid md:grid-cols-3 gap-4 sm:gap-6">
             {approach.map((a) => (
               <div
                 key={a.title}
-                className="rounded-3xl border border-[#E9E2DA] bg-white p-6"
+                className="rounded-3xl border border-[#E9E2DA] bg-white p-5 sm:p-6"
               >
                 <div className="flex items-center gap-3">
                   {a.icon}
                   <span className="font-medium text-[#3A342E]">{a.title}</span>
                 </div>
-                <p className="mt-3 text-[#5A544E]">{a.text}</p>
+                <p className="mt-3 text-[#5A544E] text-[15px] sm:text-base">{a.text}</p>
               </div>
             ))}
           </div>
         </Container>
       </section>
       <section>
-        <Container className="py-10" style={{ contentVisibility: "auto" }}>
-          <h3 className="font-serif text-2xl text-[#3A342E] mb-6 text-center">
+        <Container className="py-8 sm:py-10" style={{ contentVisibility: "auto" }}>
+          <h3 className="font-serif text-2xl text-[#3A342E] mb-5 sm:mb-6 text-center">
             FAQs
           </h3>
           <div className="mx-auto max-w-3xl grid gap-3">
@@ -879,13 +952,13 @@ const SERVICES = [
 const ServicesPage = () => (
   <main className="bg-white" style={{ contentVisibility: "auto" }}>
     <div className="bg-white border-b border-[#E9E2DA]">
-      <Container className="py-12" style={{ contentVisibility: "auto" }}>
+      <Container className="py-10 sm:py-12" style={{ contentVisibility: "auto" }}>
         <SectionTitle
           title="Let's Create Together"
           subtitle="Thoughtful collections—custom quotes after a quick chat."
           center
         />
-        <div className="grid md:grid-cols-3 gap-6">
+        <div className="grid md:grid-cols-3 gap-4 sm:gap-6">
           {SERVICES.map((s, idx) => (
             <motion.div
               key={s.title}
@@ -893,18 +966,17 @@ const ServicesPage = () => (
               whileInView={{ opacity: 1, y: 0 }}
               viewport={{ once: true }}
               transition={{ delay: idx * 0.05 }}
-              className="rounded-3xl border border-[#E9E2DA] bg-white p-6"
+              className="rounded-3xl border border-[#E9E2DA] bg-white p-5 sm:p-6"
             >
               <div className="flex items-center gap-3">
                 <Heart className="h-5 w-5 text-[#C7A869]" />
-                <h3 className="font-serif text-xl text-[#3A342E]">{s.title}</h3>
+                <h3 className="font-serif text-lg sm:text-xl text-[#3A342E]">{s.title}</h3>
               </div>
-              <p className="mt-2 text-[#5A544E]">{s.desc}</p>
-              <ul className="mt-4 space-y-2 text-sm text-[#3A342E]">
+              <p className="mt-2 text-[#5A544E] text-[15px] sm:text-base">{s.desc}</p>
+              <ul className="mt-4 space-y-2 text-[15px] sm:text-sm text-[#3A342E]">
                 {s.pkg.map((p) => (
                   <li key={p} className="flex items-start gap-2">
-                    <span className="mt-1 h-1.5 w-1.5 rounded-full bg-[#C7A869]" />{" "}
-                    {p}
+                    <span className="mt-2 h-1.5 w-1.5 rounded-full bg-[#C7A869]" /> {p}
                   </li>
                 ))}
               </ul>
@@ -938,6 +1010,7 @@ function formatUSDateTime(localDate) {
 
 function _devTests() {
   try {
+    // Existing test
     const t = new Date(2025, 7, 22, 19, 30);
     const { dateUS, time12 } = formatUSDateTime(t);
     console.assert(
@@ -945,6 +1018,15 @@ function _devTests() {
       "Date/time formatting failed",
       { dateUS, time12 }
     );
+
+    // Additional tests (edge cases)
+    const tMidnight = new Date(2025, 0, 1, 0, 0);
+    const a1 = formatUSDateTime(tMidnight);
+    console.assert(a1.dateUS === "01-01-2025" && a1.time12 === "12:00 AM", "Midnight formatting failed", a1);
+
+    const tNoon = new Date(2025, 0, 1, 12, 0);
+    const a2 = formatUSDateTime(tNoon);
+    console.assert(a2.dateUS === "01-01-2025" && a2.time12 === "12:00 PM", "Noon formatting failed", a2);
   } catch {}
 }
 
@@ -1074,18 +1156,19 @@ const ContactPage = () => {
 
   return (
     <main
-      className="relative min-h-screen"
+      className="relative"
       style={{
         backgroundImage: `url(${cld(IMAGES.bookBg)})`,
         backgroundSize: "cover",
-        backgroundPosition: "center",
+        backgroundPosition: "50% 0%",
         backgroundRepeat: "no-repeat",
       }}
     >
-      <div className="absolute inset-0 bg-white/40 -z-10" />
+      {/* stronger wash on phones for readability over image */}
+      <div className="absolute inset-0 -z-10 backdrop-blur-[2px] sm:backdrop-blur-[3px] md:backdrop-blur-[4px] bg-white/50 sm:bg-white/35" />
 
       <div className="border-b border-[#E9E2DA]">
-        <Container className="pt-12 pb-2">
+        <Container className="pt-10 sm:pt-12 pb-2">
           <SectionTitle
             title="Let's make something beautiful"
             subtitle="Tell me a little about you and your vision."
@@ -1093,16 +1176,12 @@ const ContactPage = () => {
           />
         </Container>
         <Container
-          className="pb-12 grid md:grid-cols-3 gap-8 md:gap-10 items-start"
+          className="pb-3 md:pb-4 grid md:grid-cols-3 gap-6 sm:gap-8 items-start"
           style={{ contentVisibility: "auto" }}
         >
           {/* Form */}
-          <div className="lg:col-span-2">
-            <form
-              onSubmit={onSubmit}
-              className="grid sm:grid-cols-2 gap-4 rounded-3xl border border-[#E9E2DA] bg-white/70 p-6 shadow-sm"
-              aria-label="Contact form"
-            >
+          <div className="lg:col-span-2"><div className="rounded-3xl border border-[#E9E2DA] bg-gradient-to-br from-[#FAF7F2] via-white to-[#E9E2DA]/40 p-5 sm:p-6 shadow-sm">
+            <form onSubmit={onSubmit} aria-label="Contact form" className="grid gap-4">
               <input type="text" name="website" className="hidden" tabIndex={-1} autoComplete="off" />
               <div>
                 <label className="text-sm text-[#5A544E]" htmlFor="name">
@@ -1112,7 +1191,7 @@ const ContactPage = () => {
                   required
                   id="name"
                   name="name"
-                  className="mt-1 w-full rounded-2xl border border-[#E9E2DA] bg-white/90 px-4 py-3 outline-none focus:ring-2 focus:ring-[#C7A869]/50"
+                  className="mt-1 w-full rounded-2xl border border-[#E9E2DA] bg-white/90 px-4 py-3 text-[16px] outline-none focus:ring-2 focus:ring-[#C7A869]/50"
                 />
               </div>
               <div>
@@ -1124,7 +1203,7 @@ const ContactPage = () => {
                   type="email"
                   id="email"
                   name="email"
-                  className="mt-1 w-full rounded-2xl border border-[#E9E2DA] bg-white/90 px-4 py-3 outline-none focus:ring-2 focus:ring-[#C7A869]/50"
+                  className="mt-1 w-full rounded-2xl border border-[#E9E2DA] bg-white/90 px-4 py-3 text-[16px] outline-none focus:ring-2 focus:ring-[#C7A869]/50"
                 />
               </div>
               <div>
@@ -1139,7 +1218,7 @@ const ContactPage = () => {
                   placeholder="(555) 123-4567"
                   value={phone}
                   onChange={(e) => setPhone(formatPhone(e.target.value))}
-                  className="mt-1 w-full rounded-2xl border border-[#E9E2DA] bg-white/90 px-4 py-3 outline-none focus:ring-2 focus:ring-[#C7A869]/50"
+                  className="mt-1 w-full rounded-2xl border border-[#E9E2DA] bg-white/90 px-4 py-3 text-[16px] outline-none focus:ring-2 focus:ring-[#C7A869]/50"
                 />
               </div>
               <div>
@@ -1151,7 +1230,7 @@ const ContactPage = () => {
                   name="type"
                   value={type}
                   onChange={(e) => setType(e.target.value)}
-                  className="mt-1 w-full rounded-2xl border border-[#E9E2DA] bg-white/90 px-4 py-3 outline-none focus:ring-2 focus:ring-[#C7A869]/50"
+                  className="mt-1 w-full rounded-2xl border border-[#E9E2DA] bg-white/90 px-4 py-3 text-[16px] outline-none focus:ring-2 focus:ring-[#C7A869]/50"
                 >
                   {["General Inquiry", "Wedding", "Couples", "Family", "Lifestyle"].map((t) => (
                     <option key={t}>{t}</option>
@@ -1172,7 +1251,7 @@ const ContactPage = () => {
                   min={todayStr}
                   value={dateStr}
                   onChange={(e) => setDateStr(e.target.value)}
-                  className="mt-1 w-full rounded-2xl border border-[#E9E2DA] bg-white/90 px-4 py-3 outline-none focus:ring-2 focus:ring-[#C7A869]/50"
+                  className="mt-1 w-full rounded-2xl border border-[#E9E2DA] bg-white/90 px-4 py-3 text-[16px] outline-none focus:ring-2 focus:ring-[#C7A869]/50 appearance-none min-w-0 max-w-full"
                 />
               </div>
               <div>
@@ -1185,7 +1264,7 @@ const ContactPage = () => {
                   name="time"
                   value={timeStr}
                   onChange={(e) => setTimeStr(e.target.value)}
-                  className="mt-1 w-full rounded-2xl border border-[#E9E2DA] bg-white/90 px-4 py-3 outline-none focus:ring-2 focus:ring-[#C7A869]/50"
+                  className="mt-1 w-full rounded-2xl border border-[#E9E2DA] bg-white/90 px-4 py-3 text-[16px] outline-none focus:ring-2 focus:ring-[#C7A869]/50 appearance-none min-w-0 max-w-full"
                 >
                   <option value="" disabled>
                     Select a time
@@ -1207,7 +1286,7 @@ const ContactPage = () => {
                   name="message"
                   rows={5}
                   placeholder="Tell me about your session—location ideas, people involved, vibes…"
-                  className="mt-1 w-full rounded-2xl border border-[#E9E2DA] bg-white/90 px-4 py-3 outline-none focus:ring-2 focus:ring-[#C7A869]/50"
+                  className="mt-1 w-full rounded-2xl border border-[#E9E2DA] bg-white/90 px-4 py-3 text-[16px] outline-none focus:ring-2 focus:ring-[#C7A869]/50"
                 ></textarea>
               </div>
 
@@ -1240,7 +1319,7 @@ const ContactPage = () => {
                 )
               )}
             </div>
-          </div>
+          </div></div>
 
           {/* Sidebar */}
           <aside className="lg:sticky lg:top-24 self-start">
@@ -1254,8 +1333,7 @@ const ContactPage = () => {
               <div className="flex items-start gap-3">
                 <MapPin className="h-5 w-5 text-[#C7A869]" />
                 <p className="text-[#3A342E]">
-                  Serving Cincinnati, NKY, and beyond.{" "}
-                  <span className="whitespace-nowrap">Travel welcome.</span>
+                  Serving Cincinnati, NKY, and beyond. <span className="whitespace-nowrap">Travel welcome.</span>
                 </p>
               </div>
               <div className="mt-4 flex flex-wrap gap-2">
@@ -1341,47 +1419,81 @@ const HomePage = () => (
 );
 
 // ---------------------------------------------
-// Footer
+// Footer (centered & refined)
 // ---------------------------------------------
 const Footer = () => (
   <footer className="border-t border-[#E9E2DA] bg-white">
-    <Container className="py-10 grid md:grid-cols-3 gap-8">
-      <div>
-        <div className="flex items-center gap-2">
+    {/* Top block */}
+    <Container className="py-10 grid md:grid-cols-3 gap-10 items-start text-center md:text-left">
+      {/* Brand + tagline */}
+      <div className="flex flex-col items-center md:items-start">
+        <div className="inline-flex items-center gap-2">
           <Camera className="h-5 w-5 text-[#C7A869]" />
           <span className="font-serif text-lg text-[#3A342E]">
             Moments by Sunny
           </span>
         </div>
-        <p className="mt-3 text-[#5A544E]">
+        <p className="mt-3 text-[#5A544E] max-w-sm">
           Capturing emotions in every frame. Warm, romantic, nostalgic, authentic.
         </p>
       </div>
+
+      {/* Navigate */}
       <div>
         <h4 className="font-medium text-[#3A342E] mb-3">Navigate</h4>
         <div className="grid gap-2 text-[#5A544E]">
-          <Link className="no-underline" to="/">Home</Link>
-          <Link className="no-underline" to="/portfolio">Portfolio</Link>
-          <Link className="no-underline" to="/about">About</Link>
-          <Link className="no-underline" to="/services">Services</Link>
-          <Link className="no-underline" to="/contact">Contact</Link>
+          <Link className="no-underline hover:text-[#C7A869]" to="/">Home</Link>
+          <Link className="no-underline hover:text-[#C7A869]" to="/portfolio">Portfolio</Link>
+          <Link className="no-underline hover:text-[#C7A869]" to="/about">About</Link>
+          <Link className="no-underline hover:text-[#C7A869]" to="/services">Services</Link>
+          <Link className="no-underline hover:text-[#C7A869]" to="/contact">Contact</Link>
         </div>
       </div>
-      <div>
+
+      {/* Connect */}
+      <div className="flex flex-col items-center md:items-start">
         <h4 className="font-medium text-[#3A342E] mb-3">Connect</h4>
         <div className="grid gap-3 text-[#5A544E]">
-          <a className="inline-flex items-center gap-2 hover:text-[#C7A869] no-underline" href={`mailto:${CONTACT.email}`}>
+          <a
+            className="inline-flex items-center gap-2 hover:text-[#C7A869] no-underline"
+            href={`mailto:${CONTACT.email}`}
+          >
             <Mail className="h-4 w-4" /> {CONTACT.email}
           </a>
-          <a className="inline-flex items-center gap-2 hover:text-[#C7A869] no-underline" href={CONTACT.phoneHref}>
+          <a
+            className="inline-flex items-center gap-2 hover:text-[#C7A869] no-underline"
+            href={CONTACT.phoneHref}
+          >
             <Phone className="h-4 w-4" /> {CONTACT.phoneLabel}
           </a>
-          <a className="inline-flex items-center gap-2 hover:text-[#C7A869] no-underline" href={CONTACT.instagram} target="_blank" rel="noreferrer noopener" aria-label="Instagram">
-            <Instagram className="h-7 w-7" />
+          <a
+            className="inline-flex items-center gap-2 hover:text-[#C7A869] no-underline"
+            href={CONTACT.instagram}
+            target="_blank"
+            rel="noreferrer noopener"
+            aria-label="Instagram"
+          >
+            <Instagram className="h-6 w-6" />
           </a>
         </div>
       </div>
     </Container>
+
+    {/* Centered CTA band (subtle, elegant) */}
+    <div className="border-t border-[#E9E2DA] bg-gradient-to-r from-[#FAF7F2] to-white">
+      <Container className="py-6">
+        <div className="flex justify-center">
+          <Link to="/contact" className="no-underline">
+            <span className="inline-flex items-center gap-2 px-6 py-3 rounded-2xl text-base font-medium shadow-sm bg-[#C7A869] text-white hover:bg-[#b29356] transition">
+              Book a Session
+              <ArrowUpRight className="h-5 w-5" />
+            </span>
+          </Link>
+        </div>
+      </Container>
+    </div>
+
+    {/* Copyright */}
     <div className="py-6 text-center text-sm text-[#5A544E] bg-[#FAF7F2]">
       © {new Date().getFullYear()} Moments by Sunny. All rights reserved. Site by Sunny.
     </div>
@@ -1407,6 +1519,33 @@ const AppShell = () => {
       document.head.appendChild(link2);
     });
     _devTests();
+  }, []);
+  // Inject favicon/logo & theme color
+  useEffect(() => {
+    try {
+      const remove = document.querySelectorAll(
+        'link[rel="icon"], link[rel="shortcut icon"], link[rel="apple-touch-icon"]'
+      );
+      remove.forEach((n) => n.parentElement?.removeChild(n));
+      const mk = (rel, sizes, href) => {
+        const l = document.createElement("link");
+        l.rel = rel;
+        if (sizes) l.sizes = sizes;
+        l.href = href;
+        document.head.appendChild(l);
+      };
+      mk("icon", "16x16", cldW(FAVICON, 16));
+      mk("icon", "32x32", cldW(FAVICON, 32));
+      mk("apple-touch-icon", "180x180", cldW(FAVICON, 180));
+
+      let theme = document.querySelector('meta[name="theme-color"]');
+      if (!theme) {
+        theme = document.createElement("meta");
+        theme.setAttribute("name", "theme-color");
+        document.head.appendChild(theme);
+      }
+      theme.setAttribute("content", "#C7A869");
+    } catch {}
   }, []);
   return (
     <div className="min-h-screen flex flex-col bg-white">
