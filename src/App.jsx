@@ -671,6 +671,19 @@ const MasonryItem = ({ img, idx }) => {
   const widths = [320, 480, 640, 800, 1024, 1280];
   const eager = idx < 12;
   const [loaded, setLoaded] = useState(false);
+  const [srcUrl, setSrcUrl] = useState(cldW(img.src, 640));
+
+  // If the transformed URL fails or is too slow, fall back to the original
+  useEffect(() => {
+    setSrcUrl(cldW(img.src, 640));
+    setLoaded(false);
+
+    const slowFallback = setTimeout(() => {
+      // If still not loaded after 4s, switch to the original asset
+      if (!loaded) setSrcUrl(img.src);
+    }, 4000);
+    return () => clearTimeout(slowFallback);
+  }, [img.src]);
 
   return (
     <div className="mb-4 sm:mb-6 break-inside-avoid">
@@ -684,20 +697,18 @@ const MasonryItem = ({ img, idx }) => {
         }}
       >
         <img
-          src={cldW(img.src, 640)}
+          src={srcUrl}
           srcSet={cldSrcSet(img.src, widths)}
           sizes="(max-width: 640px) 100vw, (max-width: 1024px) 50vw, 25vw"
           alt={img.label}
           loading={eager ? "eager" : "lazy"}
           decoding="async"
           fetchPriority={eager ? "high" : "auto"}
+          referrerPolicy="no-referrer"
           onLoad={() => setLoaded(true)}
-          onError={(e) => {
-            try {
-              e.currentTarget.src = img.src; // fallback to original URL
-              e.currentTarget.removeAttribute("srcset");
-              e.currentTarget.sizes = "100vw";
-            } catch {}
+          onError={() => {
+            // Hard fallback to the original image
+            if (srcUrl !== img.src) setSrcUrl(img.src);
             setLoaded(true);
           }}
           className={`w-full h-auto block select-none ${
