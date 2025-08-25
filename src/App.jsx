@@ -32,11 +32,10 @@ const FORMSPREE_ENDPOINT = "https://formspree.io/f/mwpqjnnw";
 
 /* =============================================================
    Moments by Sunny — Single-file React site (JSX)
-   Performance-tuned version (Aug 2025)
-   - Smaller hero candidates + eco quality
-   - Intent preloading for Portfolio (menu hover/tap)
-   - Eager/high priority only for first rows in masonry
-   - No heavy global preloads that block hero
+   — Mobile-first tweaks
+   — Safer tap targets & spacing
+   — Cloudinary responsive images (f_auto, q_auto, dpr_auto)
+   — PERFORMANCE: keep-alive Portfolio + instant progressive images
 ============================================================= */
 
 // ---------------------------------------------
@@ -74,49 +73,31 @@ const IMAGES = {
 // Favicon (separate from navbar logo so we can swap independently)
 const FAVICON = "https://res.cloudinary.com/dz9agtvev/image/upload/v1755974985/8b5e04ec-5655-42a9-97ed-d2cc71e74ab3_atmweo.png";
 
-// ---------------------------------------------
 // Cloudinary helpers
-// ---------------------------------------------
 const cld = (u) =>
   u.includes("/upload/")
     ? u.replace(
         "/upload/",
-        "/upload/f_auto,q_auto,fl_progressive:steep/"
+        "/upload/f_auto,q_auto,fl_progressive:steep,dpr_auto/"
       )
     : u;
 const cldW = (u, w) =>
   u.includes("/upload/")
     ? u.replace(
         "/upload/",
-        `/upload/f_auto,q_auto,fl_progressive:steep,w_${w}/`
+        `/upload/f_auto,q_auto,fl_progressive:steep,dpr_auto,w_${w}/`
       )
     : u;
 const cldSrcSet = (u, widths) =>
   widths.map((w) => `${cldW(u, w)} ${w}w`).join(", ");
+// Crisp, tiny placeholder that draws instantly
 const cldPlaceholder = (u) =>
   u.includes("/upload/")
-    ? u.replace("/upload/", "/upload/f_auto,q_30,w_200/") // crisp mini preview
+    ? u.replace("/upload/", "/upload/f_auto,q_25,w_80,fl_progressive:steep/")
     : u;
-// Eco variants for background warmups / low-byte fetches
-const cldEco = (u) =>
-  u.includes("/upload/")
-    ? u.replace(
-        "/upload/",
-        "/upload/f_auto,q_auto:eco,fl_progressive:steep/"
-      )
-    : u;
-const cldEcoW = (u, w) =>
-  u.includes("/upload/")
-    ? u.replace(
-        "/upload/",
-        `/upload/f_auto,q_auto:eco,fl_progressive:steep,w_${w}/`
-      )
-    : u;
-const cldEcoSrcSet = (u, widths) =>
-  widths.map((w) => `${cldEcoW(u, w)} ${w}w`).join(", ");
 
 // Width sets for srcSet
-const HERO_WIDTHS = [1000, 1280, 1600];
+const HERO_WIDTHS = [1280, 1600, 2000, 2400];
 const CARD_WIDTHS = [480, 640, 800, 1000];
 const PORTRAIT_WIDTHS = [480, 640, 800, 1200];
 
@@ -304,36 +285,6 @@ const FAQItem = ({ q, a }) => {
 };
 
 // ---------------------------------------------
-// Intent preloading for Portfolio
-// ---------------------------------------------
-let __portfolioPrimed = false;
-function primePortfolioAboveTheFold(count = 12) {
-  if (typeof document === "undefined" || __portfolioPrimed) return;
-  __portfolioPrimed = true;
-  try {
-    const imgs = buildImages().slice(0, count);
-    // Real preloads for the first screen so menu → portfolio is instant
-    imgs.forEach((im, i) => {
-      const link = document.createElement("link");
-      link.rel = "preload";
-      link.as = "image";
-      link.href = cldW(im.src, 800);
-      link.setAttribute("imagesrcset", cldSrcSet(im.src, [480, 640, 800]));
-      link.setAttribute("imagesizes", "(max-width: 1024px) 50vw, 25vw");
-      link.fetchPriority = i < 4 ? "high" : "auto";
-      document.head.appendChild(link);
-    });
-    // Also kick off low-byte Image() warmups
-    imgs.forEach((im) => {
-      const img = new Image();
-      img.decoding = "async";
-      img.loading = "eager";
-      img.src = cldEcoW(im.src, 640);
-    });
-  } catch {}
-}
-
-// ---------------------------------------------
 // Navbar
 // ---------------------------------------------
 const Navbar = () => {
@@ -411,9 +362,6 @@ const Navbar = () => {
             <NavLink
               key={href}
               to={href}
-              onMouseEnter={() => label === "Portfolio" && primePortfolioAboveTheFold()}
-              onFocus={() => label === "Portfolio" && primePortfolioAboveTheFold()}
-              onPointerDown={() => label === "Portfolio" && primePortfolioAboveTheFold()}
               className={({ isActive }) =>
                 `no-underline text-sm hover:text-[#C7A869] transition ${isActive ? "text-[#C7A869]" : ""}`
               }
@@ -462,9 +410,6 @@ const Navbar = () => {
                   <Link
                     key={href}
                     to={href}
-                    onMouseEnter={() => label === "Portfolio" && primePortfolioAboveTheFold()}
-                    onFocus={() => label === "Portfolio" && primePortfolioAboveTheFold()}
-                    onPointerDown={() => label === "Portfolio" && primePortfolioAboveTheFold()}
                     onClick={() => setOpen(false)}
                     className="block px-1 py-4 text-lg text-[#3A342E] no-underline transition-colors hover:text-[#C7A869] focus:outline-none focus:text-[#C7A869] active:opacity-80"
                   >
@@ -517,9 +462,6 @@ const Navbar = () => {
                   <Link
                     key={href}
                     to={href}
-                    onMouseEnter={() => label === "Portfolio" && primePortfolioAboveTheFold()}
-                    onFocus={() => label === "Portfolio" && primePortfolioAboveTheFold()}
-                    onPointerDown={() => label === "Portfolio" && primePortfolioAboveTheFold()}
                     onClick={() => setOpen(false)}
                     className="block px-1 py-4 text-lg text-[#3A342E] no-underline transition-colors hover:text-[#C7A869] focus:outline-none focus:text-[#C7A869] active:opacity-80"
                   >
@@ -549,8 +491,8 @@ const Hero = () => {
     <section className="relative">
       <div className="relative h-[78vh] sm:h-[88vh] md:h-[90vh]">
         <img
-          src={cldEcoW(IMAGES.heroMain, 1280)}
-          srcSet={cldEcoSrcSet(IMAGES.heroMain, HERO_WIDTHS)}
+          src={cldW(IMAGES.heroMain, 1600)}
+          srcSet={cldSrcSet(IMAGES.heroMain, HERO_WIDTHS)}
           sizes="100vw"
           alt="Warm, candid portrait from Moments by Sunny"
           className="absolute inset-0 h-full w-full object-cover object-[50%_20%] md:object-[50%_30%] select-none"
@@ -606,7 +548,7 @@ const Hero = () => {
 // Featured
 // ---------------------------------------------
 const FeaturedGallery = () => (
-  <Container className={`${FEATURED_TOP_PAD} pb-14 sm:pb-16`}>
+  <Container className={`${FEATURED_TOP_PAD} pb-14 sm:pb-16`} style={{ contentVisibility: "auto" }}>
     <SectionTitle title="Featured Work" subtitle={COPY.featuredSubtitle} center />
     <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 sm:gap-6">
       {FEATURED_ITEMS.map((it, idx) => (
@@ -617,7 +559,7 @@ const FeaturedGallery = () => (
           viewport={{ once: true }}
           transition={{ duration: 0.4, delay: idx * 0.05 }}
         >
-          <Link to="/portfolio" className="group block no-underline" onMouseEnter={primePortfolioAboveTheFold} onFocus={primePortfolioAboveTheFold} onPointerDown={primePortfolioAboveTheFold}>
+          <Link to="/portfolio" className="group block no-underline">
             <div className="relative overflow-hidden rounded-3xl shadow-sm">
               <div className="before:block before:pb-[66%]" />
               <img
@@ -734,21 +676,14 @@ const buildImages = () => {
   return images;
 };
 
+// Updated: image shows immediately (no opacity gate); progressive decode sharpens
 const MasonryItem = ({ img, idx }) => {
-  const widths = [320, 480, 640, 800]; // smaller candidates for faster picks
-  const eager = idx < 6; // eagerly load first rows
-  const [loaded, setLoaded] = useState(false);
-  const [srcUrl, setSrcUrl] = useState(
-    cldW(img.src, 640).replace("q_auto,", "q_auto:eco,")
-  );
+  const widths = [320, 480, 640, 800]; // responsive candidates
+  const eager = idx < 6;               // eagerly load first rows
+  const [srcUrl, setSrcUrl] = useState(cldW(img.src, 640));
 
   useEffect(() => {
-    setSrcUrl(cldW(img.src, 640).replace("q_auto,", "q_auto:eco,"));
-    setLoaded(false);
-    const slowFallback = setTimeout(() => {
-      if (!loaded) setSrcUrl(img.src); // hard fallback if transform is slow
-    }, 2000);
-    return () => clearTimeout(slowFallback);
+    setSrcUrl(cldW(img.src, 640));
   }, [img.src]);
 
   return (
@@ -770,17 +705,13 @@ const MasonryItem = ({ img, idx }) => {
           loading={eager ? "eager" : "lazy"}
           decoding="async"
           fetchPriority={idx < 3 ? "high" : "auto"}
-          onLoad={() => setLoaded(true)}
-          onError={() => {
-            if (srcUrl !== img.src) setSrcUrl(img.src);
-            setLoaded(true);
-          }}
-          className={`w-full h-auto block select-none ${
-            loaded ? "opacity-100" : "opacity-0"
-          } transition-opacity duration-300 motion-safe:will-change-transform motion-safe:transition-transform motion-safe:duration-300 motion-safe:ease-[cubic-bezier(.22,1,.36,1)] group-hover:scale-[1.03]`}
+          className="w-full h-auto block select-none transition-transform duration-300 ease-[cubic-bezier(.22,1,.36,1)] group-hover:scale-[1.03]"
           style={{ transformOrigin: "50% 50%", backfaceVisibility: "hidden" }}
           onContextMenu={(e) => e.preventDefault()}
           draggable={false}
+          onError={(e) => {
+            if (e.currentTarget.src !== img.src) e.currentTarget.src = img.src;
+          }}
         />
       </div>
     </div>
@@ -800,13 +731,12 @@ const PortfolioPage = () => {
   const [visibleCount, setVisibleCount] = useState(12);
   const sentinelRef = useRef(null);
 
-  // Keep a few top images preloaded but don't block hero
   useEffect(() => {
     const head = document.head;
-    const preloadCount = Math.min(4, images.length);
+    const preloadCount = Math.min(4, images.length); // a few only
     for (let i = 0; i < preloadCount; i++) {
       const link = document.createElement("link");
-      link.rel = "prefetch"; // hint, not blocking
+      link.rel = "preload";
       link.as = "image";
       link.href = cldW(images[i].src, 800);
       link.setAttribute("imagesrcset", cldSrcSet(images[i].src, [480, 640, 800]));
@@ -814,7 +744,9 @@ const PortfolioPage = () => {
       head.appendChild(link);
     }
     return () => {
-      const links = Array.from(document.querySelectorAll('link[rel="prefetch"]'));
+      const links = Array.from(
+        document.querySelectorAll('link[rel="preload"][as="image"]')
+      );
       links.forEach((l) => l.parentElement?.removeChild(l));
     };
   }, [images]);
@@ -836,8 +768,8 @@ const PortfolioPage = () => {
   }, [images.length]);
 
   return (
-    <main className="bg-white">
-      <Container className="py-8 sm:py-10">
+    <main className="bg-white" style={{ contentVisibility: "auto" }}>
+      <Container className="py-8 sm:py-10" style={{ contentVisibility: "auto" }}>
         <SectionTitle
           title="Portfolio"
           subtitle={COPY.portfolioSubtitle}
@@ -853,6 +785,17 @@ const PortfolioPage = () => {
         )}
       </Container>
     </main>
+  );
+};
+
+// ---- Keep one mounted copy of the portfolio so images stay decoded between pages
+const PortfolioCache = () => {
+  const { pathname } = useLocation();
+  const show = pathname === "/portfolio";
+  return (
+    <div aria-hidden={!show} style={{ display: show ? "block" : "none", contain: "layout style paint" }}>
+      <PortfolioPage />
+    </div>
   );
 };
 
@@ -892,7 +835,7 @@ const AboutPage = () => {
     },
   ];
   return (
-    <main className="bg-white">
+    <main className="bg-white" style={{ contentVisibility: "auto" }}>
       <section className="bg-gradient-to-b from-[#FAF7F2] to-white border-b border-[#E9E2DA]">
         <Container className="py-12 sm:py-14 text-center">
           <h1 className="font-serif text-3xl sm:text-5xl text-[#3A342E] leading-tight">
@@ -948,7 +891,7 @@ const AboutPage = () => {
         </Container>
       </section>
       <section>
-        <Container className="py-8 sm:py-10">
+        <Container className="py-8 sm:py-10" style={{ contentVisibility: "auto" }}>
           <h3 className="font-serif text-2xl text-[#3A342E] mb-5 sm:mb-6 text-center">
             My Approach
           </h3>
@@ -969,7 +912,7 @@ const AboutPage = () => {
         </Container>
       </section>
       <section>
-        <Container className="py-8 sm:py-10">
+        <Container className="py-8 sm:py-10" style={{ contentVisibility: "auto" }}>
           <h3 className="font-serif text-2xl text-[#3A342E] mb-5 sm:mb-6 text-center">
             FAQs
           </h3>
@@ -1025,9 +968,9 @@ const SERVICES = [
 ];
 
 const ServicesPage = () => (
-  <main className="bg-white">
+  <main className="bg-white" style={{ contentVisibility: "auto" }}>
     <div className="bg-white border-b border-[#E9E2DA]">
-      <Container className="py-10 sm:py-12">
+      <Container className="py-10 sm:py-12" style={{ contentVisibility: "auto" }}>
         <SectionTitle
           title="Let's Create Together"
           subtitle="Thoughtful collections—custom quotes after a quick chat."
@@ -1103,6 +1046,7 @@ function _devTests() {
     const a2 = formatUSDateTime(tNoon);
     console.assert(a2.dateUS === "01-01-2025" && a2.time12 === "12:00 PM", "Noon formatting failed", a2);
 
+    // New tests
     const tMorning = new Date(2025, 6, 4, 11, 5);
     const a3 = formatUSDateTime(tMorning);
     console.assert(a3.dateUS === "07-04-2025" && a3.time12 === "11:05 AM", "11:05 AM formatting failed", a3);
@@ -1241,7 +1185,7 @@ const ContactPage = () => {
     <main
       className="relative"
       style={{
-        backgroundImage: `url(${cldEcoW(IMAGES.bookBg, 1200)})`,
+        backgroundImage: `url(${cldW(IMAGES.bookBg, 1600)})`,
         backgroundSize: "cover",
         backgroundPosition: "50% 0%",
         backgroundRepeat: "no-repeat",
@@ -1260,6 +1204,7 @@ const ContactPage = () => {
         </Container>
         <Container
           className="pb-3 md:pb-4 grid md:grid-cols-3 gap-6 sm:gap-8 items-start"
+          style={{ contentVisibility: "auto" }}
         >
           {/* Form */}
           <div className="lg:col-span-2"><div className="rounded-3xl border border-[#E9E2DA] bg-gradient-to-br from-[#FAF7F2] via-white to-[#E9E2DA]/40 p-5 sm:p-6 shadow-sm">
@@ -1476,7 +1421,7 @@ const ContactPage = () => {
 // Home
 // ---------------------------------------------
 const HomePage = () => (
-  <main className="bg-white">
+  <main className="bg-white" style={{ contentVisibility: "auto" }}>
     <Hero />
     <FeaturedGallery />
     <div className="bg-gradient-to-r from-[#FAF7F2] to-white border-y border-[#E9E2DA]">
@@ -1583,7 +1528,7 @@ const Footer = () => (
 );
 
 // ---------------------------------------------
-// App Shell & Routes
+// App Shell & Routes  (Portfolio kept alive below Routes)
 // ---------------------------------------------
 const AppShell = () => {
   useEffect(() => {
@@ -1629,23 +1574,6 @@ const AppShell = () => {
       theme.setAttribute("content", "#C7A869");
     } catch {}
   }, []);
-
-  // Safety net: if the user doesn't hover the menu, prime a few images after idle/first input
-  useEffect(() => {
-    let fired = false;
-    const run = () => { if (fired) return; fired = true; try { primePortfolioAboveTheFold(12); } catch {} };
-    window.addEventListener('pointermove', run, { once: true, passive: true });
-    window.addEventListener('touchstart', run, { once: true, passive: true });
-    window.addEventListener('keydown', run, { once: true });
-    const idleId = window.requestIdleCallback ? requestIdleCallback(run, { timeout: 2000 }) : setTimeout(run, 1500);
-    return () => {
-      window.removeEventListener('pointermove', run);
-      window.removeEventListener('touchstart', run);
-      window.removeEventListener('keydown', run);
-      if (window.cancelIdleCallback) cancelIdleCallback(idleId); else clearTimeout(idleId);
-    };
-  }, []);
-
   return (
     <div className="min-h-screen flex flex-col bg-white">
       <Navbar />
@@ -1653,12 +1581,15 @@ const AppShell = () => {
         <ScrollToTop />
         <Routes>
           <Route path="/" element={<HomePage />} />
-          <Route path="/portfolio" element={<PortfolioPage />} />
+          {/* NOTE: portfolio route renders an empty outlet; real page is mounted below as <PortfolioCache /> */}
+          <Route path="/portfolio" element={<></>} />
           <Route path="/about" element={<AboutPage />} />
           <Route path="/services" element={<ServicesPage />} />
           <Route path="/contact" element={<ContactPage />} />
           <Route path="*" element={<Navigate to="/" />} />
         </Routes>
+        {/* Always mounted, only hidden when not at /portfolio */}
+        <PortfolioCache />
       </div>
       <Footer />
     </div>
