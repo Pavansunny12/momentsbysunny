@@ -32,10 +32,11 @@ const FORMSPREE_ENDPOINT = "https://formspree.io/f/mwpqjnnw";
 
 /* =============================================================
    Moments by Sunny — Single-file React site (JSX)
-   — Mobile-first tweaks
-   — Safer tap targets & spacing
-   — Cloudinary responsive images (f_auto, q_auto, dpr_auto)
-   — PERFORMANCE: keep-alive Portfolio + instant progressive images
+   PERFORMANCE FINAL:
+   - Disable progressive JPEGs (no blur-first)
+   - Always-mounted (keep-alive) Portfolio to preserve decoded images
+   - Tiny sharp placeholders via CSS background
+   - No opacity gate on <img>
 ============================================================= */
 
 // ---------------------------------------------
@@ -73,27 +74,27 @@ const IMAGES = {
 // Favicon (separate from navbar logo so we can swap independently)
 const FAVICON = "https://res.cloudinary.com/dz9agtvev/image/upload/v1755974985/8b5e04ec-5655-42a9-97ed-d2cc71e74ab3_atmweo.png";
 
-// Cloudinary helpers
+// Cloudinary helpers (NO progressive JPEG)
 const cld = (u) =>
   u.includes("/upload/")
     ? u.replace(
         "/upload/",
-        "/upload/f_auto,q_auto,fl_progressive:steep,dpr_auto/"
+        "/upload/f_auto,q_auto,dpr_auto/"
       )
     : u;
 const cldW = (u, w) =>
   u.includes("/upload/")
     ? u.replace(
         "/upload/",
-        `/upload/f_auto,q_auto,fl_progressive:steep,dpr_auto,w_${w}/`
+        `/upload/f_auto,q_auto,dpr_auto,w_${w}/`
       )
     : u;
 const cldSrcSet = (u, widths) =>
   widths.map((w) => `${cldW(u, w)} ${w}w`).join(", ");
-// Crisp, tiny placeholder that draws instantly
-const cldPlaceholder = (u) =>
+// Tiny, sharp placeholder (no blur)
+const tinyPlaceholder = (u) =>
   u.includes("/upload/")
-    ? u.replace("/upload/", "/upload/f_auto,q_25,w_80,fl_progressive:steep/")
+    ? u.replace("/upload/", "/upload/f_auto,q_25,w_80/")
     : u;
 
 // Width sets for srcSet
@@ -106,8 +107,8 @@ const PORTRAIT_WIDTHS = [480, 640, 800, 1200];
 // ---------------------------------------------
 const CONTACT = {
   email: "contact@momentsbysunny.com",
-  phoneLabel: "+1 (469) 905 2228",
-  phoneHref: "tel:+14699052228",
+  phoneLabel: "+1 469 431 2333",
+  phoneHref: "tel:+14694312333",
   instagram: "https://www.instagram.com/moments_by_sunny/",
 };
 const COPY = {
@@ -489,7 +490,7 @@ const Hero = () => {
   const reduce = useReducedMotion();
   return (
     <section className="relative">
-      <div className="relative h-[78vh] sm:h-[88vh] md:h-[90vh]">
+      <div className="relative h:[78vh] sm:h-[88vh] md:h-[90vh]">
         <img
           src={cldW(IMAGES.heroMain, 1600)}
           srcSet={cldSrcSet(IMAGES.heroMain, HERO_WIDTHS)}
@@ -676,14 +677,18 @@ const buildImages = () => {
   return images;
 };
 
-// Updated: image shows immediately (no opacity gate); progressive decode sharpens
 const MasonryItem = ({ img, idx }) => {
-  const widths = [320, 480, 640, 800]; // responsive candidates
-  const eager = idx < 6;               // eagerly load first rows
+  const widths = [320, 480, 640, 800];
+  const eager = idx < 6; // more high-priority above the fold
   const [srcUrl, setSrcUrl] = useState(cldW(img.src, 640));
 
+  // If the transformed URL fails or is too slow, fall back to the original
   useEffect(() => {
     setSrcUrl(cldW(img.src, 640));
+    const slowFallback = setTimeout(() => {
+      setSrcUrl((prev) => (prev === img.src ? prev : img.src));
+    }, 2000);
+    return () => clearTimeout(slowFallback);
   }, [img.src]);
 
   return (
@@ -692,7 +697,7 @@ const MasonryItem = ({ img, idx }) => {
         tabIndex={0}
         className="group relative block w-full focus:outline-none rounded-xl overflow-hidden shadow-sm transition-shadow duration-300 hover:shadow-md"
         style={{
-          backgroundImage: `url(${cldPlaceholder(img.src)})`,
+          backgroundImage: `url(${tinyPlaceholder(img.src)})`,
           backgroundSize: "cover",
           backgroundPosition: "50% 0%",
         }}
@@ -704,14 +709,14 @@ const MasonryItem = ({ img, idx }) => {
           alt={img.label}
           loading={eager ? "eager" : "lazy"}
           decoding="async"
-          fetchPriority={idx < 3 ? "high" : "auto"}
-          className="w-full h-auto block select-none transition-transform duration-300 ease-[cubic-bezier(.22,1,.36,1)] group-hover:scale-[1.03]"
+          fetchPriority={eager ? "high" : "low"}
+          onError={() => {
+            if (srcUrl !== img.src) setSrcUrl(img.src);
+          }}
+          className="w-full h-auto block select-none motion-safe:will-change-transform motion-safe:transition-transform motion-safe:duration-300 motion-safe:ease-[cubic-bezier(.22,1,.36,1)] group-hover:scale-[1.03]"
           style={{ transformOrigin: "50% 50%", backfaceVisibility: "hidden" }}
           onContextMenu={(e) => e.preventDefault()}
           draggable={false}
-          onError={(e) => {
-            if (e.currentTarget.src !== img.src) e.currentTarget.src = img.src;
-          }}
         />
       </div>
     </div>
@@ -733,7 +738,7 @@ const PortfolioPage = () => {
 
   useEffect(() => {
     const head = document.head;
-    const preloadCount = Math.min(4, images.length); // a few only
+    const preloadCount = Math.min(6, images.length);
     for (let i = 0; i < preloadCount; i++) {
       const link = document.createElement("link");
       link.rel = "preload";
@@ -785,17 +790,6 @@ const PortfolioPage = () => {
         )}
       </Container>
     </main>
-  );
-};
-
-// ---- Keep one mounted copy of the portfolio so images stay decoded between pages
-const PortfolioCache = () => {
-  const { pathname } = useLocation();
-  const show = pathname === "/portfolio";
-  return (
-    <div aria-hidden={!show} style={{ display: show ? "block" : "none", contain: "layout style paint" }}>
-      <PortfolioPage />
-    </div>
   );
 };
 
@@ -1528,9 +1522,23 @@ const Footer = () => (
 );
 
 // ---------------------------------------------
-// App Shell & Routes  (Portfolio kept alive below Routes)
+// Portfolio Keep-Alive (always mounted, toggled visible)
+// ---------------------------------------------
+function PortfolioCache({ visible }) {
+  return (
+    <div style={{ display: visible ? "block" : "none" }} aria-hidden={!visible}>
+      <PortfolioPage />
+    </div>
+  );
+}
+
+// ---------------------------------------------
+// App Shell & Routes
 // ---------------------------------------------
 const AppShell = () => {
+  const { pathname } = useLocation();
+  const isPortfolio = pathname === "/portfolio";
+
   useEffect(() => {
     // Preconnect to Cloudinary
     const origins = ["https://res.cloudinary.com"];
@@ -1574,22 +1582,23 @@ const AppShell = () => {
       theme.setAttribute("content", "#C7A869");
     } catch {}
   }, []);
+
   return (
     <div className="min-h-screen flex flex-col bg-white">
       <Navbar />
       <div className="flex-1">
         <ScrollToTop />
+        {/* Routes: render nothing for /portfolio (the cache below shows it) */}
         <Routes>
           <Route path="/" element={<HomePage />} />
-          {/* NOTE: portfolio route renders an empty outlet; real page is mounted below as <PortfolioCache /> */}
-          <Route path="/portfolio" element={<></>} />
+          <Route path="/portfolio" element={<div />} />
           <Route path="/about" element={<AboutPage />} />
           <Route path="/services" element={<ServicesPage />} />
           <Route path="/contact" element={<ContactPage />} />
           <Route path="*" element={<Navigate to="/" />} />
         </Routes>
-        {/* Always mounted, only hidden when not at /portfolio */}
-        <PortfolioCache />
+        {/* Always-mounted Portfolio keeps images decoded between navigations */}
+        <PortfolioCache visible={isPortfolio} />
       </div>
       <Footer />
     </div>
