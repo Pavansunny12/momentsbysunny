@@ -110,6 +110,7 @@ const CONTACT = {
   phoneLabel: "+1 469 431 2333",
   phoneHref: "tel:+14694312333",
   instagram: "https://www.instagram.com/moments_by_sunny/",
+  facebook: "https://www.facebook.com/profile.php?id=61579898277926",
 };
 const COPY = {
   featuredSubtitle:
@@ -490,7 +491,7 @@ const Hero = () => {
   const reduce = useReducedMotion();
   return (
     <section className="relative">
-      <div className="relative h:[78vh] sm:h-[88vh] md:h-[90vh]">
+      <div className="relative h-[78vh] sm:h-[88vh] md:h-[90vh]">
         <img
           src={cldW(IMAGES.heroMain, 1600)}
           srcSet={cldSrcSet(IMAGES.heroMain, HERO_WIDTHS)}
@@ -1066,6 +1067,7 @@ const ContactPage = () => {
   const todayStr = useMemo(() => {
     const d = new Date();
     return `${d.getFullYear()}-${pad(d.getMonth() + 1)}-${pad(d.getDate())}`;
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
   const timeOptions = useMemo(() => {
@@ -1201,146 +1203,148 @@ const ContactPage = () => {
           style={{ contentVisibility: "auto" }}
         >
           {/* Form */}
-          <div className="lg:col-span-2"><div className="rounded-3xl border border-[#E9E2DA] bg-gradient-to-br from-[#FAF7F2] via-white to-[#E9E2DA]/40 p-5 sm:p-6 shadow-sm">
-            <form onSubmit={onSubmit} aria-label="Contact form" className="grid gap-4">
-              <input type="text" name="website" className="hidden" tabIndex={-1} autoComplete="off" />
-              <div>
-                <label className="text-sm text-[#5A544E]" htmlFor="name">
-                  Name
-                </label>
-                <input
-                  required
-                  id="name"
-                  name="name"
-                  className="mt-1 w-full rounded-2xl border border-[#E9E2DA] bg-white/90 px-4 py-3 text-[16px] outline-none focus:ring-2 focus:ring-[#C7A869]/50"
-                />
-              </div>
-              <div>
-                <label className="text-sm text-[#5A544E]" htmlFor="email">
-                  Email
-                </label>
-                <input
-                  required
-                  type="email"
-                  id="email"
-                  name="email"
-                  className="mt-1 w-full rounded-2xl border border-[#E9E2DA] bg-white/90 px-4 py-3 text-[16px] outline-none focus:ring-2 focus:ring-[#C7A869]/50"
-                />
-              </div>
-              <div>
-                <label className="text-sm text-[#5A544E]" htmlFor="phone">
-                  Phone
-                </label>
-                <input
-                  required
-                  type="tel"
-                  id="phone"
-                  name="phone"
-                  placeholder="(555) 123-4567"
-                  value={phone}
-                  onChange={(e) => setPhone(formatPhone(e.target.value))}
-                  className="mt-1 w-full rounded-2xl border border-[#E9E2DA] bg-white/90 px-4 py-3 text-[16px] outline-none focus:ring-2 focus:ring-[#C7A869]/50"
-                />
-              </div>
-              <div>
-                <label className="text-sm text-[#5A544E]" htmlFor="type">
-                  Type of Inquiry
-                </label>
-                <select
-                  id="type"
-                  name="type"
-                  value={type}
-                  onChange={(e) => setType(e.target.value)}
-                  className="mt-1 w-full rounded-2xl border border-[#E9E2DA] bg-white/90 px-4 py-3 text-[16px] outline-none focus:ring-2 focus:ring-[#C7A869]/50"
-                >
-                  {["General Inquiry", "Wedding", "Couples", "Family", "Lifestyle"].map((t) => (
-                    <option key={t}>{t}</option>
-                  ))}
-                </select>
-              </div>
-
-              {/* Date and Time */}
-              <div>
-                <label className="text-sm text-[#5A544E]" htmlFor="date">
-                  Preferred Date
-                </label>
-                <input
-                  required
-                  type="date"
-                  id="date"
-                  name="date"
-                  min={todayStr}
-                  value={dateStr}
-                  onChange={(e) => setDateStr(e.target.value)}
-                  className="mt-1 w-full rounded-2xl border border-[#E9E2DA] bg-white/90 px-4 py-3 text-[16px] outline-none focus:ring-2 focus:ring-[#C7A869]/50 appearance-none min-w-0 max-w-full"
-                />
-              </div>
-              <div>
-                <label className="text-sm text-[#5A544E]" htmlFor="time">
-                  Preferred Time
-                </label>
-                <select
-                  required
-                  id="time"
-                  name="time"
-                  value={timeStr}
-                  onChange={(e) => setTimeStr(e.target.value)}
-                  className="mt-1 w-full rounded-2xl border border-[#E9E2DA] bg-white/90 px-4 py-3 text-[16px] outline-none focus:ring-2 focus:ring-[#C7A869]/50 appearance-none min-w-0 max-w-full"
-                >
-                  <option value="" disabled>
-                    Select a time
-                  </option>
-                  {timeOptions.map((t) => (
-                    <option key={t.value} value={t.value}>
-                      {t.label}
-                    </option>
-                  ))}
-                </select>
-              </div>
-
-              <div className="sm:col-span-2">
-                <label className="text-sm text-[#5A544E]" htmlFor="message">
-                  Message
-                </label>
-                <textarea
-                  id="message"
-                  name="message"
-                  rows={5}
-                  placeholder="Tell me about your session—location ideas, people involved, vibes…"
-                  className="mt-1 w-full rounded-2xl border border-[#E9E2DA] bg-white/90 px-4 py-3 text-[16px] outline-none focus:ring-2 focus:ring-[#C7A869]/50"
-                ></textarea>
-              </div>
-
-              <div className="sm:col-span-2 flex items-center justify-between">
-                <div className="flex items-center gap-2 text-[#5A544E]">
-                  <input
-                    id="consent"
-                    name="consent"
-                    type="checkbox"
-                    required
-                    className="h-4 w-4 rounded border-[#E9E2DA]"
-                  />
-                  <label htmlFor="consent" className="text-sm">
-                    I agree to be contacted by email or SMS.
+          <div className="lg:col-span-2">
+            <div className="rounded-3xl border border-[#E9E2DA] bg-gradient-to-br from-[#FAF7F2] via-white to-[#E9E2DA]/40 p-5 sm:p-6 shadow-sm">
+              <form onSubmit={onSubmit} aria-label="Contact form" className="grid gap-4">
+                <input type="text" name="website" className="hidden" tabIndex={-1} autoComplete="off" />
+                <div>
+                  <label className="text-sm text-[#5A544E]" htmlFor="name">
+                    Name
                   </label>
+                  <input
+                    required
+                    id="name"
+                    name="name"
+                    className="mt-1 w-full rounded-2xl border border-[#E9E2DA] bg-white/90 px-4 py-3 text-[16px] outline-none focus:ring-2 focus:ring-[#C7A869]/50"
+                  />
                 </div>
-                <Button>
-                  Send Message <ArrowRight className="h-4 w-4" />
-                </Button>
+                <div>
+                  <label className="text-sm text-[#5A544E]" htmlFor="email">
+                    Email
+                  </label>
+                  <input
+                    required
+                    type="email"
+                    id="email"
+                    name="email"
+                    className="mt-1 w-full rounded-2xl border border-[#E9E2DA] bg-white/90 px-4 py-3 text-[16px] outline-none focus:ring-2 focus:ring-[#C7A869]/50"
+                  />
+                </div>
+                <div>
+                  <label className="text-sm text-[#5A544E]" htmlFor="phone">
+                    Phone
+                  </label>
+                  <input
+                    required
+                    type="tel"
+                    id="phone"
+                    name="phone"
+                    placeholder="(555) 123-4567"
+                    value={phone}
+                    onChange={(e) => setPhone(formatPhone(e.target.value))}
+                    className="mt-1 w-full rounded-2xl border border-[#E9E2DA] bg-white/90 px-4 py-3 text-[16px] outline-none focus:ring-2 focus:ring-[#C7A869]/50"
+                  />
+                </div>
+                <div>
+                  <label className="text-sm text-[#5A544E]" htmlFor="type">
+                    Type of Inquiry
+                  </label>
+                  <select
+                    id="type"
+                    name="type"
+                    value={type}
+                    onChange={(e) => setType(e.target.value)}
+                    className="mt-1 w-full rounded-2xl border border-[#E9E2DA] bg-white/90 px-4 py-3 text-[16px] outline-none focus:ring-2 focus:ring-[#C7A869]/50"
+                  >
+                    {["General Inquiry", "Wedding", "Couples", "Family", "Lifestyle"].map((t) => (
+                      <option key={t}>{t}</option>
+                    ))}
+                  </select>
+                </div>
+
+                {/* Date and Time */}
+                <div>
+                  <label className="text-sm text-[#5A544E]" htmlFor="date">
+                    Preferred Date
+                  </label>
+                  <input
+                    required
+                    type="date"
+                    id="date"
+                    name="date"
+                    min={todayStr}
+                    value={dateStr}
+                    onChange={(e) => setDateStr(e.target.value)}
+                    className="mt-1 w-full rounded-2xl border border-[#E9E2DA] bg-white/90 px-4 py-3 text-[16px] outline-none focus:ring-2 focus:ring-[#C7A869]/50 appearance-none min-w-0 max-w-full"
+                  />
+                </div>
+                <div>
+                  <label className="text-sm text-[#5A544E]" htmlFor="time">
+                    Preferred Time
+                  </label>
+                  <select
+                    required
+                    id="time"
+                    name="time"
+                    value={timeStr}
+                    onChange={(e) => setTimeStr(e.target.value)}
+                    className="mt-1 w-full rounded-2xl border border-[#E9E2DA] bg-white/90 px-4 py-3 text-[16px] outline-none focus:ring-2 focus:ring-[#C7A869]/50 appearance-none min-w-0 max-w-full"
+                  >
+                    <option value="" disabled>
+                      Select a time
+                    </option>
+                    {timeOptions.map((t) => (
+                      <option key={t.value} value={t.value}>
+                        {t.label}
+                      </option>
+                    ))}
+                  </select>
+                </div>
+
+                <div className="sm:col-span-2">
+                  <label className="text-sm text-[#5A544E]" htmlFor="message">
+                    Message
+                  </label>
+                  <textarea
+                    id="message"
+                    name="message"
+                    rows={5}
+                    placeholder="Tell me about your session—location ideas, people involved, vibes…"
+                    className="mt-1 w-full rounded-2xl border border-[#E9E2DA] bg-white/90 px-4 py-3 text-[16px] outline-none focus:ring-2 focus:ring-[#C7A869]/50"
+                  ></textarea>
+                </div>
+
+                <div className="sm:col-span-2 flex items-center justify-between">
+                  <div className="flex items-center gap-2 text-[#5A544E]">
+                    <input
+                      id="consent"
+                      name="consent"
+                      type="checkbox"
+                      required
+                      className="h-4 w-4 rounded border-[#E9E2DA]"
+                    />
+                    <label htmlFor="consent" className="text-sm">
+                      I agree to be contacted by email or SMS.
+                    </label>
+                  </div>
+                  <Button>
+                    Send Message <ArrowRight className="h-4 w-4" />
+                  </Button>
+                </div>
+              </form>
+              <div role="status" aria-live="polite" className="mt-3">
+                {error ? (
+                  <span className="text-red-600">{error}</span>
+                ) : (
+                  submitted && (
+                    <span className="text-[#3A342E]">
+                      Thank you! I’ll be in touch within 24–48 hours.
+                    </span>
+                  )
+                )}
               </div>
-            </form>
-            <div role="status" aria-live="polite" className="mt-3">
-              {error ? (
-                <span className="text-red-600">{error}</span>
-              ) : (
-                submitted && (
-                  <span className="text-[#3A342E]">
-                    Thank you! I’ll be in touch within 24–48 hours.
-                  </span>
-                )
-              )}
             </div>
-          </div></div>
+          </div>
 
           {/* Sidebar */}
           <aside className="lg:sticky lg:top-24 self-start">
@@ -1371,7 +1375,7 @@ const ContactPage = () => {
               </div>
               <div className="mt-5 flex gap-4">
                 <a
-                  className="no-underline text-[#3A342E] hover:text-[#C7A869]"
+                  className="inline-flex items-center hover:text-[#C7A869] no-underline"
                   href={CONTACT.instagram}
                   target="_blank"
                   rel="noreferrer noopener"
@@ -1380,8 +1384,10 @@ const ContactPage = () => {
                   <Instagram className="h-6 w-6" />
                 </a>
                 <a
-                  className="no-underline text-[#3A342E] hover:text-[#C7A869]"
-                  href="#"
+                  className="inline-flex items-center hover:text-[#C7A869] no-underline"
+                  href={CONTACT.facebook}
+                  target="_blank"
+                  rel="noreferrer noopener"
                   aria-label="Facebook"
                 >
                   <Facebook className="h-6 w-6" />
@@ -1487,17 +1493,29 @@ const Footer = () => (
           >
             <Phone className="h-4 w-4" /> {CONTACT.phoneLabel}
           </a>
-          <a
-            className="inline-flex items-center gap-2 hover:text-[#C7A869] no-underline"
-            href={CONTACT.instagram}
-            target="_blank"
-            rel="noreferrer noopener"
-            aria-label="Instagram"
-          >
-            <Instagram className="h-6 w-6" />
-          </a>
+          <div className="flex items-center gap-4">
+            <a
+              className="inline-flex items-center hover:text-[#C7A869] no-underline"
+              href={CONTACT.instagram}
+              target="_blank"
+              rel="noreferrer noopener"
+              aria-label="Instagram"
+            >
+              <Instagram className="h-6 w-6" />
+            </a>
+            <a
+              className="inline-flex items-center hover:text-[#C7A869] no-underline"
+              href={CONTACT.facebook}
+              target="_blank"
+              rel="noreferrer noopener"
+              aria-label="Facebook"
+            >
+              <Facebook className="h-6 w-6" />
+            </a>
+          </div>
         </div>
       </div>
+
     </Container>
 
     {/* Centered CTA band (subtle, elegant) */}
