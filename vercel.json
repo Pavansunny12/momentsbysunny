@@ -1,6 +1,6 @@
 {
-  "redirects": [
-    { "source": "/clients", "destination": "https://<your-wfolio-username>.wfolio.com", "permanent": false },
-    { "source": "/clients/:path*", "destination": "https://<your-wfolio-username>.wfolio.com/:path*", "permanent": false }
+  "routes": [
+    { "handle": "filesystem" },
+    { "src": "/.*", "dest": "/index.html" }
   ]
 }
