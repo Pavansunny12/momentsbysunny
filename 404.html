@@ -1,0 +1,31 @@
+<!doctype html>
+<html>
+  <head>
+    <meta charset="utf-8">
+    <title>Redirecting…</title>
+    <meta name="robots" content="noindex">
+    <script>
+      /*! Single Page Apps for GitHub Pages - redirect */
+      (function() {
+        var l = window.location;
+        /* If your site is served from a subfolder like /my-repo, set this to 1.
+           For a custom domain (momentsbysunny.com) or user site, keep 0. */
+        var pathSegmentsToKeep = 0;
+
+        var path = l.pathname.slice(1).split('/');
+        var newPath = path.slice(pathSegmentsToKeep).join('/');
+        var base = l.protocol + '//' + l.hostname + (l.port ? ':' + l.port : '') +
+                   '/' + path.slice(0, pathSegmentsToKeep).join('/');
+
+        if (base.slice(-1) !== '/') base += '/';
+
+        l.replace(
+          base + '?p=' + newPath +
+          (l.search ? '&q=' + l.search.slice(1).replace(/&/g, '~and~') : '') +
+          l.hash
+        );
+      })();
+    </script>
+  </head>
+  <body>Redirecting…</body>
+</html>
