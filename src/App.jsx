@@ -1,8 +1,7 @@
 import React, { useEffect, useMemo, useRef, useState } from "react";
 import { createPortal } from "react-dom";
 import {
-  HashRouter,
-  MemoryRouter,
+  BrowserRouter,
   Routes,
   Route,
   Link,
@@ -182,18 +181,14 @@ const ShimmerText = ({ children, className = "" }) => (
   </motion.span>
 );
 
-function isHttpLikeProtocol(proto) {
-  return proto === "http:" || proto === "https:";
-}
-const AdaptiveRouter = ({ children }) => {
-  const proto = typeof window !== "undefined" ? window.location.protocol : "about:";
-  const isHttp = isHttpLikeProtocol(proto);
-  return isHttp ? (
-    <HashRouter>{children}</HashRouter>
-  ) : (
-    <MemoryRouter initialEntries={["/"]}>{children}</MemoryRouter>
-  );
-};
+// ---------------------------------------------
+// Router helper — use BrowserRouter (clean URLs)
+// ---------------------------------------------
+const AdaptiveRouter = ({ children }) => (
+  <BrowserRouter>
+    {children}
+  </BrowserRouter>
+);
 
 const Container = ({ className = "", children, ...props }) => (
   <div className={`mx-auto max-w-7xl px-4 sm:px-6 lg:px-8 ${className}`} {...props}>
@@ -1305,13 +1300,13 @@ const ContactPage = () => {
                   <label className="text-sm text-[#5A544E]" htmlFor="message">
                     Message
                   </label>
-                  <textarea
-                    id="message"
-                    name="message"
-                    rows={5}
-                    placeholder="Tell me about your session—location ideas, people involved, vibes…"
-                    className="mt-1 w-full rounded-2xl border border-[#E9E2DA] bg-white/90 px-4 py-3 text-[16px] outline-none focus:ring-2 focus:ring-[#C7A869]/50"
-                  ></textarea>
+                    <textarea
+                      id="message"
+                      name="message"
+                      rows={5}
+                      placeholder="Tell me about your session—location ideas, people involved, vibes…"
+                      className="mt-1 w-full rounded-2xl border border-[#E9E2DA] bg-white/90 px-4 py-3 text-[16px] outline-none focus:ring-2 focus:ring-[#C7A869]/50"
+                    ></textarea>
                 </div>
 
                 <div className="sm:col-span-2 flex items-center justify-between">

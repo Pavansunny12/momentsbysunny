@@ -2,40 +2,20 @@
 <html lang="en">
   <head>
     <meta charset="UTF-8" />
-    <!-- Key for proper mobile rendering -->
     <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
     <title>Moments by Sunny</title>
 
-    <!-- Optional: fonts preconnect (keeps things snappy) -->
-    <link rel="preconnect" href="https://fonts.googleapis.com">
-    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@400;600;700&family=Inter:wght@400;500;600&display=swap" rel="stylesheet">
+    <!-- Optional fonts -->
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@400;600;700&family=Inter:wght@400;500;600&display=swap" rel="stylesheet" />
 
     <meta name="theme-color" content="#ffffff" />
-
-    <!-- SPA path restore for GitHub Pages -->
-    <script>
-      /*! Single Page Apps for GitHub Pages - path restore */
-      (function(l) {
-        if (l.search) {
-          var q = {};
-          l.search.slice(1).split('&').forEach(function(v) {
-            var a = v.split('=');
-            q[a[0]] = a.slice(1).join('=').replace(/~and~/g, '&');
-          });
-          if (q.p !== undefined) {
-            var newPath = q.p + (q.q ? ('?' + q.q) : '') + l.hash;
-            window.history.replaceState(null, null, newPath);
-          }
-        }
-      }(window.location));
-    </script>
-
-    <!-- Keep your built assets exactly as Vite output them -->
-    <script type="module" crossorigin src="/assets/index-BXBf2Ayt.js"></script>
-    <link rel="stylesheet" crossorigin href="/assets/index-BP3mO7KT.css">
   </head>
   <body>
     <div id="root"></div>
+
+    <!-- ✅ Vite dev entry (do NOT reference /assets/* files here) -->
+    <script type="module" src="/src/main.jsx"></script>
   </body>
 </html>
