@@ -1,21 +1,25 @@
-/* ----- Google Fonts must be imported first ----- */
+/* 1) Google Fonts MUST be the very first @import */
 @import url("https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&family=Playfair+Display:wght@400;600;700&display=swap");
 
-/* ----- Tailwind core ----- */
-@tailwind base;
-@tailwind components;
-@tailwind utilities;
+/* 2) Tailwind v4 core */
+@import "tailwindcss";
 
-/* ----- Base resets & site-wide tweaks ----- */
+/* 3) Optional: v4 theme tokens */
+@theme {
+  --font-sans: "Inter", ui-sans-serif, system-ui, -apple-system, "Segoe UI", Roboto, "Helvetica Neue", Arial, "Noto Sans", "Apple Color Emoji", "Segoe UI Emoji", "Segoe UI Symbol";
+  --font-serif: "Playfair Display", ui-serif, Georgia, Cambria, "Times New Roman", Times, serif;
+
+  --color-brand: #C7A869;
+  --color-ink:   #3A342E;
+  --color-ink-2: #5A544E;
+}
+
+/* 4) Base tweaks */
 @layer base {
   html, body {
-    @apply bg-white text-[#3A342E] antialiased;
-    font-family: Inter, ui-sans-serif, system-ui, -apple-system, "Segoe UI", Roboto, "Helvetica Neue", Arial, "Noto Sans", "Apple Color Emoji", "Segoe UI Emoji", "Segoe UI Symbol";
+    @apply bg-white text-[color:var(--color-ink)] antialiased;
+    font-family: var(--font-sans);
   }
-
-  h1, h2, h3, h4, .font-serif {
-    font-family: "Playfair Display", ui-serif, Georgia, Cambria, "Times New Roman", Times, serif;
-  }
-
+  h1, h2, h3, h4, .font-serif { font-family: var(--font-serif); }
   a { @apply no-underline text-inherit; }
 }
