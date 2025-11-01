@@ -108,7 +108,7 @@ const CONTACT = {
   email: "contact@momentsbysunny.com",
   phoneLabel: "+1 469 431 2333",
   phoneHref: "tel:+14694312333",
-  instagram: "https://www.instagram.com/moments_by_sunny/",
+  instagram: "https://www.instagram.com/momentsbysunny/",
   facebook: "https://www.facebook.com/profile.php?id=61579898277926",
 };
 const COPY = {
@@ -813,7 +813,7 @@ const AboutPage = () => {
   const faqs = [
     {
       q: "Where are you based? Do you travel?",
-      a: "I’m based in Cincinnati and happily travel throughout NKY and the Midwest. For farther sessions, travel is arranged at cost.",
+      a: "I’m based in Dallas–Fort Worth (DFW) and happily travel across Texas. For farther sessions, travel is arranged at cost.",
     },
     {
       q: "How soon do we receive photos?",
@@ -1353,11 +1353,11 @@ const ContactPage = () => {
               <div className="flex items-start gap-3">
                 <MapPin className="h-5 w-5 text-[#C7A869]" />
                 <p className="text-[#3A342E]">
-                  Serving Cincinnati, NKY, and beyond. <span className="whitespace-nowrap">Travel welcome.</span>
+                  Serving the Dallas–Fort Worth (DFW) area and beyond. <span className="whitespace-nowrap">Travel welcome.</span>
                 </p>
               </div>
               <div className="mt-4 flex flex-wrap gap-2">
-                {["Cincinnati • NKY", "Travel welcome", "Replies within 24–48h"].map(
+                {["DFW Metroplex", "Travel welcome", "Replies within 24–48h"].map(
                   (b) => (
                     <span
                       key={b}
