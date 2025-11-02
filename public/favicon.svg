@@ -1,0 +1,17 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 48 48">
+  <!-- Gold badge background -->
+  <circle cx="24" cy="24" r="24" fill="#C7A869"></circle>
+
+  <!-- Camera body (optimized margins for tiny sizes) -->
+  <rect x="7" y="13" width="34" height="22" rx="5" fill="#FFFFFF"></rect>
+
+  <!-- Top housing bump -->
+  <rect x="12" y="9.5" width="9.5" height="6" rx="2.5" fill="#FFFFFF"></rect>
+
+  <!-- Lens (high-contrast ring for clarity at 16–32px) -->
+  <circle cx="24" cy="24" r="8.8" fill="#C7A869"></circle>
+  <circle cx="24" cy="24" r="4.6" fill="#FFFFFF"></circle>
+
+  <!-- Shutter/indicator dot -->
+  <circle cx="35.5" cy="18" r="2.2" fill="#C7A869"></circle>
+</svg>
