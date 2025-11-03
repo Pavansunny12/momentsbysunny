@@ -59,38 +59,29 @@ const BRAND = {
 
 // Site images used across sections
 const IMAGES = {
-  // hero image used on home (top aligned so faces are visible)
   heroMain:
     "https://res.cloudinary.com/dz9agtvev/image/upload/v1755440876/main-min_e83hkb.jpg",
-  // about page portrait
   aboutMe:
     "https://res.cloudinary.com/dz9agtvev/image/upload/v1755440869/aboutme-min_h3pglb.jpg",
-  // contact page background behind the form
   bookBg:
     "https://res.cloudinary.com/dz9agtvev/image/upload/v1755977327/98bc3f56-1556-49f0-8cbb-b1caf9dcd077_jtbb86.png",
 };
 
 // Favicon (separate from navbar logo so we can swap independently)
-const FAVICON = "https://res.cloudinary.com/dz9agtvev/image/upload/v1755974985/8b5e04ec-5655-42a9-97ed-d2cc71e74ab3_atmweo.png";
+const FAVICON =
+  "https://res.cloudinary.com/dz9agtvev/image/upload/v1755974985/8b5e04ec-5655-42a9-97ed-d2cc71e74ab3_atmweo.png";
 
 // Cloudinary helpers (NO progressive JPEG)
 const cld = (u) =>
   u.includes("/upload/")
-    ? u.replace(
-        "/upload/",
-        "/upload/f_auto,q_auto,dpr_auto/"
-      )
+    ? u.replace("/upload/", "/upload/f_auto,q_auto,dpr_auto/")
     : u;
 const cldW = (u, w) =>
   u.includes("/upload/")
-    ? u.replace(
-        "/upload/",
-        `/upload/f_auto,q_auto,dpr_auto,w_${w}/`
-      )
+    ? u.replace("/upload/", `/upload/f_auto,q_auto,dpr_auto,w_${w}/`)
     : u;
 const cldSrcSet = (u, widths) =>
   widths.map((w) => `${cldW(u, w)} ${w}w`).join(", ");
-// Tiny, sharp placeholder (no blur)
 const tinyPlaceholder = (u) =>
   u.includes("/upload/")
     ? u.replace("/upload/", "/upload/f_auto,q_25,w_80/")
@@ -108,7 +99,7 @@ const CONTACT = {
   email: "contact@momentsbysunny.com",
   phoneLabel: "+1 469 431 2333",
   phoneHref: "tel:+14694312333",
-  instagram: "https://www.instagram.com/momentsbysunny/",
+  instagram: "https://www.instagram.com/momentsbysunny/?utm_source=qr#",
   facebook: "https://www.facebook.com/profile.php?id=61579898277926",
 };
 const COPY = {
@@ -142,8 +133,8 @@ const FEATURED_ITEMS = [
 // ---------------------------------------------
 // Layout & animation tokens
 // ---------------------------------------------
-const HERO_PAD = "pl-4 sm:pl-8 lg:pl-24 pt-4 md:pt-8 pb-8"; // tighter on phones
-const FEATURED_TOP_PAD = "pt-12 md:pt-20 lg:pt-24"; // less top gap on phones
+const HERO_PAD = "pl-4 sm:pl-8 lg:pl-24 pt-4 md:pt-8 pb-8";
+const FEATURED_TOP_PAD = "pt-12 md:pt-20 lg:pt-24";
 const HERO_EASE = [0.22, 1, 0.36, 1];
 const heroContainer = {
   hidden: {},
@@ -184,11 +175,7 @@ const ShimmerText = ({ children, className = "" }) => (
 // ---------------------------------------------
 // Router helper — use BrowserRouter (clean URLs)
 // ---------------------------------------------
-const AdaptiveRouter = ({ children }) => (
-  <BrowserRouter>
-    {children}
-  </BrowserRouter>
-);
+const AdaptiveRouter = ({ children }) => <BrowserRouter>{children}</BrowserRouter>;
 
 const Container = ({ className = "", children, ...props }) => (
   <div className={`mx-auto max-w-7xl px-4 sm:px-6 lg:px-8 ${className}`} {...props}>
@@ -218,13 +205,7 @@ const BTN_BASE = {
     "bg-transparent text-white border border-white hover:bg-white hover:text-[#3A342E]",
 };
 
-const Button = ({
-  to,
-  children,
-  onClick,
-  variant = "solid",
-  className = "",
-}) => {
+const Button = ({ to, children, onClick, variant = "solid", className = "" }) => {
   const base = BTN_BASE[variant] ?? BTN_BASE.solid;
   const el = (
     <span
@@ -236,10 +217,7 @@ const Button = ({
   );
   if (to)
     return (
-      <Link
-        to={to}
-        className="group inline-block no-underline focus:outline-none"
-      >
+      <Link to={to} className="group inline-block no-underline focus:outline-none">
         {el}
       </Link>
     );
@@ -266,9 +244,7 @@ const FAQItem = ({ q, a }) => {
         aria-expanded={open}
       >
         <span className="font-medium text-[15px] sm:text-base">{q}</span>
-        <ChevronDown
-          className={`h-5 w-5 transition-transform ${open ? "rotate-180" : ""}`}
-        />
+        <ChevronDown className={`h-5 w-5 transition-transform ${open ? "rotate-180" : ""}`} />
       </button>
       <motion.div
         initial={false}
@@ -310,7 +286,6 @@ const Navbar = () => {
     return () => window.removeEventListener("keydown", onKey);
   }, []);
 
-  // Detect touch devices (phones / iPad) so we show a full-screen sheet there
   useEffect(() => {
     const calc = () => {
       let touch = false;
@@ -332,10 +307,7 @@ const Navbar = () => {
   const mobileToggleClass = forceMobile ? "flex" : "xl:hidden";
 
   const SheetPortal = ({ children }) =>
-    createPortal(
-      <div className="fixed inset-0 z-[9999]">{children}</div>,
-      document.body
-    );
+    createPortal(<div className="fixed inset-0 z-[9999]">{children}</div>, document.body);
 
   return (
     <header className="sticky top-0 z-50 backdrop-blur supports-[backdrop-filter]:bg-white/60 border-b border-[#E9E2DA] bg-white">
@@ -355,12 +327,15 @@ const Navbar = () => {
             ["Portfolio", "/portfolio"],
             ["About", "/about"],
             ["Services", "/services"],
+            ["Clients", "/clients"],
           ].map(([label, href]) => (
             <NavLink
               key={href}
               to={href}
               className={({ isActive }) =>
-                `no-underline text-sm hover:text-[#C7A869] transition ${isActive ? "text-[#C7A869]" : ""}`
+                `no-underline text-sm hover:text-[#C7A869] transition ${
+                  isActive ? "text-[#C7A869]" : ""
+                }`
               }
             >
               {label}
@@ -381,7 +356,7 @@ const Navbar = () => {
         </button>
       </Container>
 
-      {/* Full-screen sheet on touch devices, via portal to body */}
+      {/* Full-screen sheet on touch devices */}
       {open && forceMobile && (
         <SheetPortal>
           <div className="absolute inset-0 bg-white" />
@@ -402,6 +377,7 @@ const Navbar = () => {
                   ["Portfolio", "/portfolio"],
                   ["About", "/about"],
                   ["Services", "/services"],
+                  ["Clients", "/clients"],
                   ["Contact", "/contact"],
                 ].map(([label, href]) => (
                   <Link
@@ -427,11 +403,7 @@ const Navbar = () => {
       {/* Right drawer for non-touch small screens */}
       {open && !forceMobile && (
         <SheetPortal>
-          <button
-            aria-hidden
-            onClick={() => setOpen(false)}
-            className="absolute inset-0 bg-black/20"
-          />
+          <button aria-hidden onClick={() => setOpen(false)} className="absolute inset-0 bg-black/20" />
           <aside
             id="mobile-menu"
             role="dialog"
@@ -454,6 +426,7 @@ const Navbar = () => {
                   ["Portfolio", "/portfolio"],
                   ["About", "/about"],
                   ["Services", "/services"],
+                  ["Clients", "/clients"],
                   ["Contact", "/contact"],
                 ].map(([label, href]) => (
                   <Link
@@ -509,10 +482,7 @@ const Hero = () => {
               animate={reduce ? undefined : "show"}
               className={`max-w-2xl text-white ${HERO_PAD}`}
             >
-              <motion.p
-                variants={heroItem}
-                className="uppercase tracking-[0.2em] text-xs mb-4"
-              >
+              <motion.p variants={heroItem} className="uppercase tracking-[0.2em] text-xs mb-4">
                 <ShimmerText>{BRAND.tagline}</ShimmerText>
               </motion.p>
               <motion.h1
@@ -522,8 +492,7 @@ const Hero = () => {
                 Moments that feel like home.
               </motion.h1>
               <motion.p variants={heroItem} className="mt-4 text-lg text-white/90">
-                Warm, candid, and intimate photography that preserves your story
-                in soft, timeless tones.
+                Warm, candid, and intimate photography that preserves your story in soft, timeless tones.
               </motion.p>
               <motion.div variants={heroItem} className="mt-8 flex items-center gap-4">
                 <Button to="/portfolio">
@@ -675,10 +644,9 @@ const buildImages = () => {
 
 const MasonryItem = ({ img, idx }) => {
   const widths = [320, 480, 640, 800];
-  const eager = idx < 6; // more high-priority above the fold
+  const eager = idx < 6;
   const [srcUrl, setSrcUrl] = useState(cldW(img.src, 640));
 
-  // If the transformed URL fails or is too slow, fall back to the original
   useEffect(() => {
     setSrcUrl(cldW(img.src, 640));
     const slowFallback = setTimeout(() => {
@@ -745,9 +713,7 @@ const PortfolioPage = () => {
       head.appendChild(link);
     }
     return () => {
-      const links = Array.from(
-        document.querySelectorAll('link[rel="preload"][as="image"]')
-      );
+      const links = Array.from(document.querySelectorAll('link[rel="preload"][as="image"]'));
       links.forEach((l) => l.parentElement?.removeChild(l));
     };
   }, [images]);
@@ -771,11 +737,7 @@ const PortfolioPage = () => {
   return (
     <main className="bg-white" style={{ contentVisibility: "auto" }}>
       <Container className="py-8 sm:py-10" style={{ contentVisibility: "auto" }}>
-        <SectionTitle
-          title="Portfolio"
-          subtitle={COPY.portfolioSubtitle}
-          center
-        />
+        <SectionTitle title="Portfolio" subtitle={COPY.portfolioSubtitle} center />
         {images.length === 0 ? (
           <p className="text-center text-[#5A544E]">No work to show just yet.</p>
         ) : (
@@ -887,10 +849,7 @@ const AboutPage = () => {
           </h3>
           <div className="grid md:grid-cols-3 gap-4 sm:gap-6">
             {approach.map((a) => (
-              <div
-                key={a.title}
-                className="rounded-3xl border border-[#E9E2DA] bg-white p-5 sm:p-6"
-              >
+              <div key={a.title} className="rounded-3xl border border-[#E9E2DA] bg-white p-5 sm:p-6">
                 <div className="flex items-center gap-3">
                   {a.icon}
                   <span className="font-medium text-[#3A342E]">{a.title}</span>
@@ -948,12 +907,7 @@ const SERVICES = [
     slug: "family",
     title: "Family & Lifestyle",
     desc: "At-home or outdoor sessions focused on connection over posing.",
-    pkg: [
-      "60 minutes",
-      "Gentle direction",
-      "50+ finished photographs",
-      "Private online gallery",
-    ],
+    pkg: ["60 minutes", "Gentle direction", "50+ finished photographs", "Private online gallery"],
   },
 ];
 
@@ -1002,6 +956,171 @@ const ServicesPage = () => (
 );
 
 // ---------------------------------------------
+// Clients (Option 1: load from external JSON)
+// ---------------------------------------------
+
+// 1) Update this to your real Cloudinary RAW URL once you upload clients.json
+// Example for your cloud: https://res.cloudinary.com/dz9agtvev/raw/upload/clients.json
+const CLIENTS_JSON_URL = "/clients.json";
+
+const ClientCard = ({ c, value, onChange, unlocked, onUnlock }) => (
+  <div className="rounded-3xl border border-[#E9E2DA] bg-white shadow-sm overflow-hidden">
+    <img
+      src={c.image}
+      alt={`${c.name} cover`}
+      className="w-full h-70 object-cover select-none"
+      onContextMenu={(e) => e.preventDefault()}
+      draggable={false}
+    />
+    <div className="p-5">
+      <h3 className="font-serif text-xl text-[#3A342E]">{c.name}</h3>
+      <p className="text-[#5A544E] mt-1">
+        {new Date(c.date).toLocaleDateString(undefined, {
+          year: "numeric",
+          month: "short",
+          day: "2-digit",
+        })}
+      </p>
+
+      {c.pin && !unlocked ? (
+        <div className="mt-4 flex gap-2">
+          <input
+            type="password"
+            inputMode="numeric"
+            placeholder="Enter PIN"
+            value={value}
+            onChange={(e) => onChange(e.target.value)}
+            className="flex-1 rounded-xl border border-[#E9E2DA] bg-white px-3 py-2 text-sm outline-none focus:ring-2 focus:ring-[#C7A869]/50"
+          />
+          <button
+            onClick={onUnlock}
+            className="px-4 py-2 rounded-xl bg-[#C7A869] text-white text-sm font-medium hover:bg-[#b29356]"
+          >
+            Unlock
+          </button>
+        </div>
+      ) : (
+        <div className="mt-4">
+          <a
+            href={c.gallery}
+            target="_blank"
+            rel="noopener noreferrer"
+            className="inline-flex items-center gap-2 px-5 py-3 rounded-2xl text-[15px] font-medium shadow-sm bg-[#C7A869] text-white hover:bg-[#b29356] no-underline"
+          >
+            View Gallery <ArrowUpRight className="h-4 w-4" />
+          </a>
+          {c.pin && (
+            <p className="text-xs text-[#5A544E] mt-2">
+              Password may also be required on Wfolio.
+            </p>
+          )}
+        </div>
+      )}
+    </div>
+  </div>
+);
+
+const ClientsPage = () => {
+  const [clients, setClients] = useState([]);
+  const [pins, setPins] = useState({});
+  const [unlocked, setUnlocked] = useState({});
+  const [error, setError] = useState("");
+
+  useEffect(() => {
+    let alive = true;
+    (async () => {
+      try {
+        // Avoid caching so your updates show without redeploy
+        const res = await fetch(CLIENTS_JSON_URL, { cache: "no-store" });
+        if (!res.ok) throw new Error(`Fetch failed ${res.status}`);
+        const data = await res.json();
+
+        // Optional: sort newest first by date (ISO yyyy-mm-dd recommended)
+        data.sort((a, b) => new Date(b.date) - new Date(a.date));
+
+        if (!alive) return;
+        setClients(data);
+        setPins(Object.fromEntries(data.map((c) => [c.name, ""])));
+        setUnlocked(Object.fromEntries(data.map((c) => [c.name, !c.pin])));
+        setError("");
+      } catch (e) {
+        console.error("Failed to load clients.json", e);
+        if (!alive) return;
+        setError("Could not load client list. Please refresh.");
+      }
+    })();
+    return () => {
+      alive = false;
+    };
+  }, []);
+
+  const handleChange = (name, v) => setPins((p) => ({ ...p, [name]: v.slice(0, 8) }));
+
+  const handleUnlock = (c) => {
+    const ok = (pins[c.name] || "").trim() === String(c.pin || "");
+    if (ok) setUnlocked((u) => ({ ...u, [c.name]: true }));
+    else alert("Incorrect PIN. Please try again.");
+  };
+
+  return (
+    <main className="bg-[#FAF7F2]" style={{ contentVisibility: "auto" }}>
+      <section className="border-b border-[#E9E2DA] bg-gradient-to-b from-[#FAF7F2] to-white">
+        <Container className="py-10 sm:py-12 text-center">
+          <h1 className="font-serif text-3xl sm:text-5xl text-[#3A342E] leading-tight">
+            Moments by Sunny – Client Portal
+          </h1>
+          <p className="mt-3 text-[#5A544E] max-w-2xl mx-auto text-[15px] sm:text-base">
+            Enter your PIN to unlock your gallery links.
+          </p>
+          <div className="mt-5 h-[2px] w-20 sm:w-24 bg-[#C7A869] mx-auto" />
+          {error && <p className="mt-4 text-red-600">{error}</p>}
+        </Container>
+      </section>
+
+      <Container className="py-10 sm:py-12 grid sm:grid-cols-2 lg:grid-cols-3 gap-6">
+        {clients.length === 0 && !error ? (
+          <p className="text-[#5A544E]">No galleries yet.</p>
+        ) : (
+          clients.map((c) => (
+            <ClientCard
+              key={c.name}
+              c={c}
+              value={pins[c.name] || ""}
+              onChange={(v) => handleChange(c.name, v)}
+              unlocked={!!unlocked[c.name]}
+              onUnlock={() => handleUnlock(c)}
+            />
+          ))
+        )}
+      </Container>
+
+      <Container className="pb-12">
+  <div className="rounded-3xl border border-[#E9E2DA] bg-gradient-to-br from-[#FAF7F2] via-white to-[#E9E2DA]/40 p-6 shadow-sm">
+    <h3 className="font-serif text-2xl text-[#3A342E] mb-2">Need help?</h3>
+  <p className="text-[#5A544E] leading-relaxed">
+  If you need any help with your gallery or downloads, feel free to reach out at{" "}
+  <a
+    className="no-underline hover:text-[#C7A869]"
+    href={`mailto:${CONTACT.email}`}
+  >
+    {CONTACT.email}
+  </a>{" "}
+  or call{" "}
+  <a
+    className="no-underline hover:text-[#C7A869]"
+    href={CONTACT.phoneHref}
+  >
+    {CONTACT.phoneLabel}
+  </a>.
+</p>
+  </div>
+</Container>
+
+    </main>
+  );
+};
+
+// ---------------------------------------------
 // Helpers for Contact formatting & tests
 // ---------------------------------------------
 function formatUSDateTime(localDate) {
@@ -1018,7 +1137,6 @@ function formatUSDateTime(localDate) {
 
 function _devTests() {
   try {
-    // Existing test
     const t = new Date(2025, 7, 22, 19, 30);
     const { dateUS, time12 } = formatUSDateTime(t);
     console.assert(
@@ -1027,7 +1145,6 @@ function _devTests() {
       { dateUS, time12 }
     );
 
-    // Additional tests (edge cases)
     const tMidnight = new Date(2025, 0, 1, 0, 0);
     const a1 = formatUSDateTime(tMidnight);
     console.assert(a1.dateUS === "01-01-2025" && a1.time12 === "12:00 AM", "Midnight formatting failed", a1);
@@ -1036,7 +1153,6 @@ function _devTests() {
     const a2 = formatUSDateTime(tNoon);
     console.assert(a2.dateUS === "01-01-2025" && a2.time12 === "12:00 PM", "Noon formatting failed", a2);
 
-    // New tests
     const tMorning = new Date(2025, 6, 4, 11, 5);
     const a3 = formatUSDateTime(tMorning);
     console.assert(a3.dateUS === "07-04-2025" && a3.time12 === "11:05 AM", "11:05 AM formatting failed", a3);
@@ -1182,7 +1298,6 @@ const ContactPage = () => {
         backgroundRepeat: "no-repeat",
       }}
     >
-      {/* stronger wash on phones for readability over image */}
       <div className="absolute inset-0 -z-10 backdrop-blur-[2px] sm:backdrop-blur-[3px] md:backdrop-blur-[4px] bg-white/50 sm:bg-white/35" />
 
       <div className="border-b border-[#E9E2DA]">
@@ -1300,24 +1415,18 @@ const ContactPage = () => {
                   <label className="text-sm text-[#5A544E]" htmlFor="message">
                     Message
                   </label>
-                    <textarea
-                      id="message"
-                      name="message"
-                      rows={5}
-                      placeholder="Tell me about your session—location ideas, people involved, vibes…"
-                      className="mt-1 w-full rounded-2xl border border-[#E9E2DA] bg-white/90 px-4 py-3 text-[16px] outline-none focus:ring-2 focus:ring-[#C7A869]/50"
-                    ></textarea>
+                  <textarea
+                    id="message"
+                    name="message"
+                    rows={5}
+                    placeholder="Tell me about your session—location ideas, people involved, vibes…"
+                    className="mt-1 w-full rounded-2xl border border-[#E9E2DA] bg-white/90 px-4 py-3 text-[16px] outline-none focus:ring-2 focus:ring-[#C7A869]/50"
+                  ></textarea>
                 </div>
 
                 <div className="sm:col-span-2 flex items-center justify-between">
                   <div className="flex items-center gap-2 text-[#5A544E]">
-                    <input
-                      id="consent"
-                      name="consent"
-                      type="checkbox"
-                      required
-                      className="h-4 w-4 rounded border-[#E9E2DA]"
-                    />
+                    <input id="consent" name="consent" type="checkbox" required className="h-4 w-4 rounded border-[#E9E2DA]" />
                     <label htmlFor="consent" className="text-sm">
                       I agree to be contacted by email or SMS.
                     </label>
@@ -1331,11 +1440,7 @@ const ContactPage = () => {
                 {error ? (
                   <span className="text-red-600">{error}</span>
                 ) : (
-                  submitted && (
-                    <span className="text-[#3A342E]">
-                      Thank you! I’ll be in touch within 24–48 hours.
-                    </span>
-                  )
+                  submitted && <span className="text-[#3A342E]">Thank you! I’ll be in touch within 24–48 hours.</span>
                 )}
               </div>
             </div>
@@ -1344,29 +1449,26 @@ const ContactPage = () => {
           {/* Sidebar */}
           <aside className="lg:sticky lg:top-24 self-start">
             <div className="mb-6">
-              <h2 className="text-2xl sm:text-3xl font-serif tracking-tight text-[#3A342E]">
-                Service Area
-              </h2>
+              <h2 className="text-2xl sm:text-3xl font-serif tracking-tight text-[#3A342E]">Service Area</h2>
               <div className="mt-2 h-[3px] w-10 rounded bg-[#C7A869]/70"></div>
             </div>
             <div className="rounded-3xl border border-[#E9E2DA] bg-gradient-to-br from-[#FAF7F2] via-white to-[#E9E2DA]/40 p-5 shadow-sm">
               <div className="flex items-start gap-3">
                 <MapPin className="h-5 w-5 text-[#C7A869]" />
                 <p className="text-[#3A342E]">
-                  Serving the Dallas–Fort Worth (DFW) area and beyond. <span className="whitespace-nowrap">Travel welcome.</span>
+                  Serving the Dallas–Fort Worth (DFW) area and beyond.{" "}
+                  <span className="whitespace-nowrap">Travel welcome.</span>
                 </p>
               </div>
               <div className="mt-4 flex flex-wrap gap-2">
-                {["DFW Metroplex", "Travel welcome", "Replies within 24–48h"].map(
-                  (b) => (
-                    <span
-                      key={b}
-                      className="inline-flex items-center px-3 py-1 rounded-full border border-[#E9E2DA] bg-white text-xs text-[#3A342E]"
-                    >
-                      {b}
-                    </span>
-                  )
-                )}
+                {["DFW Metroplex", "Travel welcome", "Replies within 24–48h"].map((b) => (
+                  <span
+                    key={b}
+                    className="inline-flex items-center px-3 py-1 rounded-full border border-[#E9E2DA] bg-white text-xs text-[#3A342E]"
+                  >
+                    {b}
+                  </span>
+                ))}
               </div>
               <div className="mt-5 flex gap-4">
                 <a
@@ -1422,12 +1524,8 @@ const HomePage = () => (
     <div className="bg-gradient-to-r from-[#FAF7F2] to-white border-y border-[#E9E2DA]">
       <Container className="py-10 flex flex-col md:flex-row md:items-center md:justify-between gap-4">
         <div>
-          <h3 className="font-serif text-2xl text-[#3A342E]">
-            Ready to make something beautiful?
-          </h3>
-          <p className="text-[#5A544E]">
-            Warm, candid, and intimate photography—crafted around your story.
-          </p>
+          <h3 className="font-serif text-2xl text-[#3A342E]">Ready to make something beautiful?</h3>
+          <p className="text-[#5A544E]">Warm, candid, and intimate photography—crafted around your story.</p>
         </div>
         <div className="flex gap-3">
           <Button to="/contact">Book a Session</Button>
@@ -1441,51 +1539,52 @@ const HomePage = () => (
 );
 
 // ---------------------------------------------
-// Footer (centered & refined)
+// Footer
 // ---------------------------------------------
 const Footer = () => (
   <footer className="border-t border-[#E9E2DA] bg-white">
-    {/* Top block */}
     <Container className="py-10 grid md:grid-cols-3 gap-10 items-start text-center md:text-left">
-      {/* Brand + tagline */}
       <div className="flex flex-col items-center md:items-start">
         <div className="inline-flex items-center gap-2">
           <Camera className="h-5 w-5 text-[#C7A869]" />
-          <span className="font-serif text-lg text-[#3A342E]">
-            Moments by Sunny
-          </span>
+          <span className="font-serif text-lg text-[#3A342E]">Moments by Sunny</span>
         </div>
         <p className="mt-3 text-[#5A544E] max-w-sm">
           Capturing emotions in every frame. Warm, romantic, nostalgic, authentic.
         </p>
       </div>
 
-      {/* Navigate */}
       <div>
         <h4 className="font-medium text-[#3A342E] mb-3">Navigate</h4>
         <div className="grid gap-2 text-[#5A544E]">
-          <Link className="no-underline hover:text-[#C7A869]" to="/">Home</Link>
-          <Link className="no-underline hover:text-[#C7A869]" to="/portfolio">Portfolio</Link>
-          <Link className="no-underline hover:text-[#C7A869]" to="/about">About</Link>
-          <Link className="no-underline hover:text-[#C7A869]" to="/services">Services</Link>
-          <Link className="no-underline hover:text-[#C7A869]" to="/contact">Contact</Link>
+          <Link className="no-underline hover:text-[#C7A869]" to="/">
+            Home
+          </Link>
+          <Link className="no-underline hover:text-[#C7A869]" to="/portfolio">
+            Portfolio
+          </Link>
+          <Link className="no-underline hover:text-[#C7A869]" to="/about">
+            About
+          </Link>
+          <Link className="no-underline hover:text-[#C7A869]" to="/services">
+            Services
+          </Link>
+          <Link className="no-underline hover:text-[#C7A869]" to="/clients">
+            Clients
+          </Link>
+          <Link className="no-underline hover:text-[#C7A869]" to="/contact">
+            Contact
+          </Link>
         </div>
       </div>
 
-      {/* Connect */}
       <div className="flex flex-col items-center md:items-start">
         <h4 className="font-medium text-[#3A342E] mb-3">Connect</h4>
         <div className="grid gap-3 text-[#5A544E]">
-          <a
-            className="inline-flex items-center gap-2 hover:text-[#C7A869] no-underline"
-            href={`mailto:${CONTACT.email}`}
-          >
+          <a className="inline-flex items-center gap-2 hover:text-[#C7A869] no-underline" href={`mailto:${CONTACT.email}`}>
             <Mail className="h-4 w-4" /> {CONTACT.email}
           </a>
-          <a
-            className="inline-flex items-center gap-2 hover:text-[#C7A869] no-underline"
-            href={CONTACT.phoneHref}
-          >
+          <a className="inline-flex items-center gap-2 hover:text-[#C7A869] no-underline" href={CONTACT.phoneHref}>
             <Phone className="h-4 w-4" /> {CONTACT.phoneLabel}
           </a>
           <div className="flex items-center gap-4">
@@ -1510,10 +1609,8 @@ const Footer = () => (
           </div>
         </div>
       </div>
-
     </Container>
 
-    {/* Centered CTA band (subtle, elegant) */}
     <div className="border-t border-[#E9E2DA] bg-gradient-to-r from-[#FAF7F2] to-white">
       <Container className="py-6">
         <div className="flex justify-center">
@@ -1527,7 +1624,6 @@ const Footer = () => (
       </Container>
     </div>
 
-    {/* Copyright */}
     <div className="py-6 text-center text-sm text-[#5A544E] bg-[#FAF7F2]">
       © {new Date().getFullYear()} Moments by Sunny. All rights reserved. Site by Sunny.
     </div>
@@ -1553,7 +1649,6 @@ const AppShell = () => {
   const isPortfolio = pathname === "/portfolio";
 
   useEffect(() => {
-    // Preconnect to Cloudinary
     const origins = ["https://res.cloudinary.com"];
     origins.forEach((href) => {
       const link1 = document.createElement("link");
@@ -1568,7 +1663,7 @@ const AppShell = () => {
     });
     _devTests();
   }, []);
-  // Inject favicon/logo & theme color
+
   useEffect(() => {
     try {
       const remove = document.querySelectorAll(
@@ -1601,16 +1696,15 @@ const AppShell = () => {
       <Navbar />
       <div className="flex-1">
         <ScrollToTop />
-        {/* Routes: render nothing for /portfolio (the cache below shows it) */}
         <Routes>
           <Route path="/" element={<HomePage />} />
           <Route path="/portfolio" element={<div />} />
           <Route path="/about" element={<AboutPage />} />
           <Route path="/services" element={<ServicesPage />} />
+          <Route path="/clients" element={<ClientsPage />} />
           <Route path="/contact" element={<ContactPage />} />
           <Route path="*" element={<Navigate to="/" />} />
         </Routes>
-        {/* Always-mounted Portfolio keeps images decoded between navigations */}
         <PortfolioCache visible={isPortfolio} />
       </div>
       <Footer />
