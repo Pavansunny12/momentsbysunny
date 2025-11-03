@@ -59,10 +59,13 @@ const BRAND = {
 
 // Site images used across sections
 const IMAGES = {
+  // hero image used on home (top aligned so faces are visible)
   heroMain:
     "https://res.cloudinary.com/dz9agtvev/image/upload/v1755440876/main-min_e83hkb.jpg",
+  // about page portrait
   aboutMe:
     "https://res.cloudinary.com/dz9agtvev/image/upload/v1755440869/aboutme-min_h3pglb.jpg",
+  // contact page background behind the form
   bookBg:
     "https://res.cloudinary.com/dz9agtvev/image/upload/v1755977327/98bc3f56-1556-49f0-8cbb-b1caf9dcd077_jtbb86.png",
 };
@@ -173,6 +176,29 @@ const ShimmerText = ({ children, className = "" }) => (
 );
 
 // ---------------------------------------------
+// Modal to replace alert()
+// ---------------------------------------------
+const ErrorModal = ({ message, onClose }) => {
+  if (!message) return null;
+  return createPortal(
+    <div className="fixed inset-0 z-[9999] flex items-center justify-center bg-black/40">
+      <div className="w-[90%] max-w-sm rounded-xl border border-[#E9E2DA] bg-white p-6 text-center shadow-xl">
+        <p className="mb-6 text-base font-medium text-[#8B4513]">
+          {message}
+        </p>
+        <button
+          onClick={onClose}
+          className="rounded-lg bg-[#C7A869] px-5 py-2 text-white transition hover:bg-[#b29356]"
+        >
+          OK
+        </button>
+      </div>
+    </div>,
+    document.body
+  );
+};
+
+// ---------------------------------------------
 // Router helper — use BrowserRouter (clean URLs)
 // ---------------------------------------------
 const AdaptiveRouter = ({ children }) => <BrowserRouter>{children}</BrowserRouter>;
@@ -244,7 +270,9 @@ const FAQItem = ({ q, a }) => {
         aria-expanded={open}
       >
         <span className="font-medium text-[15px] sm:text-base">{q}</span>
-        <ChevronDown className={`h-5 w-5 transition-transform ${open ? "rotate-180" : ""}`} />
+        <ChevronDown
+          className={`h-5 w-5 transition-transform ${open ? "rotate-180" : ""}`}
+        />
       </button>
       <motion.div
         initial={false}
@@ -286,6 +314,7 @@ const Navbar = () => {
     return () => window.removeEventListener("keydown", onKey);
   }, []);
 
+  // Detect touch devices
   useEffect(() => {
     const calc = () => {
       let touch = false;
@@ -492,7 +521,8 @@ const Hero = () => {
                 Moments that feel like home.
               </motion.h1>
               <motion.p variants={heroItem} className="mt-4 text-lg text-white/90">
-                Warm, candid, and intimate photography that preserves your story in soft, timeless tones.
+                Warm, candid, and intimate photography that preserves your story
+                in soft, timeless tones.
               </motion.p>
               <motion.div variants={heroItem} className="mt-8 flex items-center gap-4">
                 <Button to="/portfolio">
@@ -644,7 +674,7 @@ const buildImages = () => {
 
 const MasonryItem = ({ img, idx }) => {
   const widths = [320, 480, 640, 800];
-  const eager = idx < 6;
+  const eager = idx < 6; // more high-priority above the fold
   const [srcUrl, setSrcUrl] = useState(cldW(img.src, 640));
 
   useEffect(() => {
@@ -713,7 +743,9 @@ const PortfolioPage = () => {
       head.appendChild(link);
     }
     return () => {
-      const links = Array.from(document.querySelectorAll('link[rel="preload"][as="image"]'));
+      const links = Array.from(
+        document.querySelectorAll('link[rel="preload"][as="image"]')
+      );
       links.forEach((l) => l.parentElement?.removeChild(l));
     };
   }, [images]);
@@ -803,7 +835,9 @@ const AboutPage = () => {
       <section>
         <Container className="py-10 sm:py-12 grid md:grid-cols-2 gap-8 sm:gap-10 items-center">
           <div>
-            <h2 className="font-serif text-2xl text-[#3A342E]">A gentle, story-first approach</h2>
+            <h2 className="font-serif text-2xl text-[#3A342E]">
+              A gentle, story-first approach
+            </h2>
             <p className="mt-3 text-[#3A342E] leading-relaxed text-[15px] sm:text-base">
               I’m Sunny—a lifestyle photographer drawn to the soft, imperfect
               little moments that make a day feel like yours. I’ll guide just
@@ -849,7 +883,10 @@ const AboutPage = () => {
           </h3>
           <div className="grid md:grid-cols-3 gap-4 sm:gap-6">
             {approach.map((a) => (
-              <div key={a.title} className="rounded-3xl border border-[#E9E2DA] bg-white p-5 sm:p-6">
+              <div
+                key={a.title}
+                className="rounded-3xl border border-[#E9E2DA] bg-white p-5 sm:p-6"
+              >
                 <div className="flex items-center gap-3">
                   {a.icon}
                   <span className="font-medium text-[#3A342E]">{a.title}</span>
@@ -956,32 +993,24 @@ const ServicesPage = () => (
 );
 
 // ---------------------------------------------
-// Clients (Option 1: load from external JSON)
+// Clients (loads from src/data/clients.json)
 // ---------------------------------------------
-
-// 1) Update this to your real Cloudinary RAW URL once you upload clients.json
-// Example for your cloud: https://res.cloudinary.com/dz9agtvev/raw/upload/clients.json
-const CLIENTS_JSON_URL = "/clients.json";
+import clients from "./data/clients.json";
 
 const ClientCard = ({ c, value, onChange, unlocked, onUnlock }) => (
   <div className="rounded-3xl border border-[#E9E2DA] bg-white shadow-sm overflow-hidden">
     <img
       src={c.image}
       alt={`${c.name} cover`}
-      className="w-full h-70 object-cover select-none"
+      className="w-full h-56 object-cover select-none"
       onContextMenu={(e) => e.preventDefault()}
       draggable={false}
     />
     <div className="p-5">
       <h3 className="font-serif text-xl text-[#3A342E]">{c.name}</h3>
-      <p className="text-[#5A544E] mt-1">
-        {new Date(c.date).toLocaleDateString(undefined, {
-          year: "numeric",
-          month: "short",
-          day: "2-digit",
-        })}
-      </p>
+      <p className="text-[#5A544E] mt-1">{c.date}</p>
 
+      {/* Locked with PIN */}
       {c.pin && !unlocked ? (
         <div className="mt-4 flex gap-2">
           <input
@@ -1021,101 +1050,74 @@ const ClientCard = ({ c, value, onChange, unlocked, onUnlock }) => (
 );
 
 const ClientsPage = () => {
-  const [clients, setClients] = useState([]);
-  const [pins, setPins] = useState({});
-  const [unlocked, setUnlocked] = useState({});
-  const [error, setError] = useState("");
-
-  useEffect(() => {
-    let alive = true;
-    (async () => {
-      try {
-        // Avoid caching so your updates show without redeploy
-        const res = await fetch(CLIENTS_JSON_URL, { cache: "no-store" });
-        if (!res.ok) throw new Error(`Fetch failed ${res.status}`);
-        const data = await res.json();
-
-        // Optional: sort newest first by date (ISO yyyy-mm-dd recommended)
-        data.sort((a, b) => new Date(b.date) - new Date(a.date));
-
-        if (!alive) return;
-        setClients(data);
-        setPins(Object.fromEntries(data.map((c) => [c.name, ""])));
-        setUnlocked(Object.fromEntries(data.map((c) => [c.name, !c.pin])));
-        setError("");
-      } catch (e) {
-        console.error("Failed to load clients.json", e);
-        if (!alive) return;
-        setError("Could not load client list. Please refresh.");
-      }
-    })();
-    return () => {
-      alive = false;
-    };
-  }, []);
+  const [pins, setPins] = useState(Object.fromEntries(clients.map((c) => [c.name, ""])));
+  const [unlocked, setUnlocked] = useState(
+    Object.fromEntries(clients.map((c) => [c.name, !c.pin]))
+  );
+  const [errorMsg, setErrorMsg] = useState("");
 
   const handleChange = (name, v) => setPins((p) => ({ ...p, [name]: v.slice(0, 8) }));
 
   const handleUnlock = (c) => {
     const ok = (pins[c.name] || "").trim() === String(c.pin || "");
-    if (ok) setUnlocked((u) => ({ ...u, [c.name]: true }));
-    else alert("Incorrect PIN. Please try again.");
+    if (ok) {
+      setUnlocked((u) => ({ ...u, [c.name]: true }));
+    } else {
+      setErrorMsg("That PIN didn’t match. Please check and try again.");
+    }
   };
 
   return (
     <main className="bg-[#FAF7F2]" style={{ contentVisibility: "auto" }}>
-      <section className="border-b border-[#E9E2DA] bg-gradient-to-b from-[#FAF7F2] to-white">
-        <Container className="py-10 sm:py-12 text-center">
-          <h1 className="font-serif text-3xl sm:text-5xl text-[#3A342E] leading-tight">
-            Moments by Sunny – Client Portal
-          </h1>
-          <p className="mt-3 text-[#5A544E] max-w-2xl mx-auto text-[15px] sm:text-base">
-            Enter your PIN to unlock your gallery links.
-          </p>
-          <div className="mt-5 h-[2px] w-20 sm:w-24 bg-[#C7A869] mx-auto" />
-          {error && <p className="mt-4 text-red-600">{error}</p>}
-        </Container>
-      </section>
+      <section className="bg-gradient-to-b from-[#FAF7F2] to-white border-b border-[#E9E2DA]">
+  <Container className="py-10 sm:py-12">
+    <SectionTitle
+      title="Client Portal"
+      subtitle="Enter your PIN to unlock your gallery links."
+      center
+    />
+  </Container>
+</section>
+
 
       <Container className="py-10 sm:py-12 grid sm:grid-cols-2 lg:grid-cols-3 gap-6">
-        {clients.length === 0 && !error ? (
-          <p className="text-[#5A544E]">No galleries yet.</p>
-        ) : (
-          clients.map((c) => (
-            <ClientCard
-              key={c.name}
-              c={c}
-              value={pins[c.name] || ""}
-              onChange={(v) => handleChange(c.name, v)}
-              unlocked={!!unlocked[c.name]}
-              onUnlock={() => handleUnlock(c)}
-            />
-          ))
-        )}
+        {clients.map((c) => (
+          <ClientCard
+            key={c.name}
+            c={c}
+            value={pins[c.name]}
+            onChange={(v) => handleChange(c.name, v)}
+            unlocked={unlocked[c.name]}
+            onUnlock={() => handleUnlock(c)}
+          />
+        ))}
       </Container>
 
       <Container className="pb-12">
   <div className="rounded-3xl border border-[#E9E2DA] bg-gradient-to-br from-[#FAF7F2] via-white to-[#E9E2DA]/40 p-6 shadow-sm">
     <h3 className="font-serif text-2xl text-[#3A342E] mb-2">Need help?</h3>
-  <p className="text-[#5A544E] leading-relaxed">
-  If you need any help with your gallery or downloads, feel free to reach out at{" "}
-  <a
-    className="no-underline hover:text-[#C7A869]"
-    href={`mailto:${CONTACT.email}`}
-  >
-    {CONTACT.email}
-  </a>{" "}
-  or call{" "}
-  <a
-    className="no-underline hover:text-[#C7A869]"
-    href={CONTACT.phoneHref}
-  >
-    {CONTACT.phoneLabel}
-  </a>.
-</p>
+    <p className="text-[#5A544E] text-[15px] sm:text-base leading-relaxed">
+      If you need any help with your gallery or downloads, feel free to reach out at{" "}
+      <a
+        href={`mailto:${CONTACT.email}`}
+        className="no-underline hover:text-[#C7A869]"
+      >
+        {CONTACT.email}
+      </a>{" "}
+      or call{" "}
+      <a
+        href={CONTACT.phoneHref}
+        className="no-underline hover:text-[#C7A869]"
+      >
+        {CONTACT.phoneLabel}
+      </a>
+      .
+    </p>
   </div>
 </Container>
 
+
+      <ErrorModal message={errorMsg} onClose={() => setErrorMsg("")} />
     </main>
   );
 };
@@ -1178,7 +1180,6 @@ const ContactPage = () => {
   const todayStr = useMemo(() => {
     const d = new Date();
     return `${d.getFullYear()}-${pad(d.getMonth() + 1)}-${pad(d.getDate())}`;
-    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
   const timeOptions = useMemo(() => {
@@ -1298,6 +1299,7 @@ const ContactPage = () => {
         backgroundRepeat: "no-repeat",
       }}
     >
+      {/* stronger wash on phones for readability over image */}
       <div className="absolute inset-0 -z-10 backdrop-blur-[2px] sm:backdrop-blur-[3px] md:backdrop-blur-[4px] bg-white/50 sm:bg-white/35" />
 
       <div className="border-b border-[#E9E2DA]">
@@ -1426,7 +1428,13 @@ const ContactPage = () => {
 
                 <div className="sm:col-span-2 flex items-center justify-between">
                   <div className="flex items-center gap-2 text-[#5A544E]">
-                    <input id="consent" name="consent" type="checkbox" required className="h-4 w-4 rounded border-[#E9E2DA]" />
+                    <input
+                      id="consent"
+                      name="consent"
+                      type="checkbox"
+                      required
+                      className="h-4 w-4 rounded border-[#E9E2DA]"
+                    />
                     <label htmlFor="consent" className="text-sm">
                       I agree to be contacted by email or SMS.
                     </label>
@@ -1440,7 +1448,11 @@ const ContactPage = () => {
                 {error ? (
                   <span className="text-red-600">{error}</span>
                 ) : (
-                  submitted && <span className="text-[#3A342E]">Thank you! I’ll be in touch within 24–48 hours.</span>
+                  submitted && (
+                    <span className="text-[#3A342E]">
+                      Thank you! I’ll be in touch within 24–48 hours.
+                    </span>
+                  )
                 )}
               </div>
             </div>
@@ -1449,7 +1461,9 @@ const ContactPage = () => {
           {/* Sidebar */}
           <aside className="lg:sticky lg:top-24 self-start">
             <div className="mb-6">
-              <h2 className="text-2xl sm:text-3xl font-serif tracking-tight text-[#3A342E]">Service Area</h2>
+              <h2 className="text-2xl sm:text-3xl font-serif tracking-tight text-[#3A342E]">
+                Service Area
+              </h2>
               <div className="mt-2 h-[3px] w-10 rounded bg-[#C7A869]/70"></div>
             </div>
             <div className="rounded-3xl border border-[#E9E2DA] bg-gradient-to-br from-[#FAF7F2] via-white to-[#E9E2DA]/40 p-5 shadow-sm">
@@ -1525,7 +1539,9 @@ const HomePage = () => (
       <Container className="py-10 flex flex-col md:flex-row md:items-center md:justify-between gap-4">
         <div>
           <h3 className="font-serif text-2xl text-[#3A342E]">Ready to make something beautiful?</h3>
-          <p className="text-[#5A544E]">Warm, candid, and intimate photography—crafted around your story.</p>
+          <p className="text-[#5A544E]">
+            Warm, candid, and intimate photography—crafted around your story.
+          </p>
         </div>
         <div className="flex gap-3">
           <Button to="/contact">Book a Session</Button>
@@ -1539,11 +1555,13 @@ const HomePage = () => (
 );
 
 // ---------------------------------------------
-// Footer
+// Footer (centered & refined)
 // ---------------------------------------------
 const Footer = () => (
   <footer className="border-t border-[#E9E2DA] bg-white">
+    {/* Top block */}
     <Container className="py-10 grid md:grid-cols-3 gap-10 items-start text-center md:text-left">
+      {/* Brand + tagline */}
       <div className="flex flex-col items-center md:items-start">
         <div className="inline-flex items-center gap-2">
           <Camera className="h-5 w-5 text-[#C7A869]" />
@@ -1554,6 +1572,7 @@ const Footer = () => (
         </p>
       </div>
 
+      {/* Navigate */}
       <div>
         <h4 className="font-medium text-[#3A342E] mb-3">Navigate</h4>
         <div className="grid gap-2 text-[#5A544E]">
@@ -1578,6 +1597,7 @@ const Footer = () => (
         </div>
       </div>
 
+      {/* Connect */}
       <div className="flex flex-col items-center md:items-start">
         <h4 className="font-medium text-[#3A342E] mb-3">Connect</h4>
         <div className="grid gap-3 text-[#5A544E]">
@@ -1611,6 +1631,7 @@ const Footer = () => (
       </div>
     </Container>
 
+    {/* Centered CTA band */}
     <div className="border-t border-[#E9E2DA] bg-gradient-to-r from-[#FAF7F2] to-white">
       <Container className="py-6">
         <div className="flex justify-center">
@@ -1624,6 +1645,7 @@ const Footer = () => (
       </Container>
     </div>
 
+    {/* Copyright */}
     <div className="py-6 text-center text-sm text-[#5A544E] bg-[#FAF7F2]">
       © {new Date().getFullYear()} Moments by Sunny. All rights reserved. Site by Sunny.
     </div>
@@ -1649,6 +1671,7 @@ const AppShell = () => {
   const isPortfolio = pathname === "/portfolio";
 
   useEffect(() => {
+    // Preconnect to Cloudinary
     const origins = ["https://res.cloudinary.com"];
     origins.forEach((href) => {
       const link1 = document.createElement("link");
@@ -1663,7 +1686,7 @@ const AppShell = () => {
     });
     _devTests();
   }, []);
-
+  // Inject favicon/logo & theme color
   useEffect(() => {
     try {
       const remove = document.querySelectorAll(
@@ -1696,6 +1719,7 @@ const AppShell = () => {
       <Navbar />
       <div className="flex-1">
         <ScrollToTop />
+        {/* Routes: render nothing for /portfolio (the cache below shows it) */}
         <Routes>
           <Route path="/" element={<HomePage />} />
           <Route path="/portfolio" element={<div />} />
@@ -1705,6 +1729,7 @@ const AppShell = () => {
           <Route path="/contact" element={<ContactPage />} />
           <Route path="*" element={<Navigate to="/" />} />
         </Routes>
+        {/* Always-mounted Portfolio keeps images decoded between navigations */}
         <PortfolioCache visible={isPortfolio} />
       </div>
       <Footer />
